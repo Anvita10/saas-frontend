@@ -7,6 +7,7 @@ import Logout from "./component/pages/Logout";
 import TaskPage from "./component/pages/TaskPage";
 import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
+import SignUp from "./component/pages/SignUp";
 
 function ProtectedRoute({ children }) {
   const { token } = useContext(AuthContext);
@@ -22,17 +23,11 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route
-              path="/"
-              element={token ? <Navigate to="/Home" replace /> : <LoginPage />}
+              path="/login"
+              element={token ? <Navigate to="/" replace /> : <LoginPage />}
             />
-            <Route
-              path="/Home"
-              element={
-                <ProtectedRoute>
-                  <HomePage />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/" element={<HomePage />} />
             <Route
               path="/dashboard"
               element={
@@ -56,7 +51,7 @@ function App() {
                   <Logout />
                 </ProtectedRoute>
               }
-            ></Route>
+            />
           </Routes>
         </BrowserRouter>
       </Box>

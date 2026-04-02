@@ -1,11 +1,14 @@
 import { AppBar, Toolbar, Typography, Box, Button } from "@mui/material";
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 function Header() {
   const navigate = useNavigate();
+  const { token } = useContext(AuthContext);
 
-  function handleLogout() {
-    navigate("/logout");
+  function handleButton(action) {
+    navigate(`/${action}`);
   }
 
   return (
@@ -29,14 +32,26 @@ function Header() {
           <Button
             variant="contained"
             color="error"
-            onClick={handleLogout}
+            onClick={() => handleButton("signup")}
             sx={{
               textTransform: "none",
               borderRadius: 2,
               px: 3,
             }}
           >
-            Logout
+            Sign Up
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => handleButton(token ? "logout" : "login")}
+            sx={{
+              textTransform: "none",
+              borderRadius: 2,
+              px: 3,
+            }}
+          >
+            {token ? "Logout" : "Login"}
           </Button>
         </Box>
       </Toolbar>

@@ -1,14 +1,24 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, TextField, Button, Typography, Paper } from "@mui/material";
 import { Alert } from "@mui/material";
-import { AuthContext } from "../../context/AuthContext";
 import useApiClient from "../../hooks/useApiClient";
 
-function LoginPage() {
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [error, setError] = useState({ email: "", password: "", creds: "" });
-  const { login } = useContext(AuthContext);
+function SignUp() {
+  const [form, setForm] = useState({
+    name: "",
+    phoneNo: "",
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState({
+    name: "",
+    phoneNo: "",
+    email: "",
+    password: "",
+    creds: "",
+  });
+
   const apiClient = useApiClient();
   const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
   const navigate = useNavigate();
@@ -30,19 +40,18 @@ function LoginPage() {
       return;
     } else {
       try {
-        const res = await apiClient("/login", {
+        await apiClient("/signup", {
           method: "POST",
-          body: { email: form.email, password: form.password },
+          body: {
+            name: form.name,
+            email: form.email,
+            phoneNo: form.phoneNo,
+            password: form.password,
+          },
         });
-
-        if (!res?.token) {
-          setError((prev) => ({ ...prev, email: "Login failed" }));
-          return;
-        }
-        login(res.token);
-        navigate("/");
+        navigate("/home");
       } catch (err) {
-        setError((prev) => ({ ...prev, creds: err.message || "Login failed" }));
+        setError((prev) => ({ ...prev, creds: "Signup failed" }));
       }
     }
   };
@@ -64,9 +73,21 @@ function LoginPage() {
         }}
       >
         <Typography variant="h5" fontWeight="600" mb={3} textAlign="center">
-          Login
+          Sign Up
         </Typography>
         {error.creds && <Alert severity="error">{error.creds}</Alert>}
+
+        <TextField
+          fullWidth
+          type="text"
+          label="Name"
+          margin="normal"
+          name="name"
+          value={form.name}
+          onChange={(e) => handleFormChange(e)}
+          error={Boolean(error.name)}
+          helperText={error.name}
+        />
 
         <TextField
           fullWidth
@@ -78,6 +99,18 @@ function LoginPage() {
           onChange={(e) => handleFormChange(e)}
           error={Boolean(error.email)}
           helperText={error.email}
+        />
+
+        <TextField
+          fullWidth
+          type="tel"
+          label="Phone No"
+          margin="normal"
+          name="phoneNo"
+          value={form.phoneNo}
+          onChange={(e) => handleFormChange(e)}
+          error={Boolean(error.phoneNo)}
+          helperText={error.phoneNo}
         />
 
         <TextField
@@ -103,11 +136,11 @@ function LoginPage() {
           }}
           onClick={handleClick}
         >
-          Login
+          Sign Up
         </Button>
       </Paper>
     </Box>
   );
 }
 
-export default LoginPage;
+export default SignUp;

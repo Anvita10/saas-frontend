@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
 function useApiClient() {
-  const { logout } = useContext(AuthContext);
+  const { logout, token } = useContext(AuthContext);
 
   return async function (url, options = {}) {
     const { method = "GET", body, headers = {} } = options;
@@ -10,6 +10,7 @@ function useApiClient() {
       method,
       headers: {
         "Content-Type": "application/json",
+        Authorization: token,
         ...headers,
       },
     };
@@ -18,21 +19,27 @@ function useApiClient() {
       config.body = JSON.stringify(body);
     }
 
-    const ApiResponse = await fetch(`http://localhost:5000${url}`, config);
+    try {
+      const ApiResponse = await fetch(`http://localhost:5000${url}`, config);
 
-    if (ApiResponse.status === 401) {
-      logout();
-      window.location.href = "/";
-      throw new Error("Unauthorized");
+      if (ApiResponse.status === 401) {
+        logout();
+        window.location.href = "/";
+        throw new Error("Unauthorized");
+      }
+
+      if (!ApiResponse.ok) {
+        const errData = await ApiResponse.json();
+        throw new Error(errData.message || "Something went wrong");
+      }
+
+      if (ApiResponse.status === 204) return null;
+
+      return ApiResponse.json();
+    } catch (err) {
+      console.error("API Error:", err.message);
+      throw err;
     }
-
-    if (!ApiResponse.ok) {
-      throw new Error("Something went wrong");
-    }
-
-    if (ApiResponse.status === 204) return null;
-
-    return ApiResponse.json();
   };
 }
 

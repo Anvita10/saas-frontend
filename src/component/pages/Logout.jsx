@@ -13,7 +13,7 @@ function Logout() {
   }
 
   function handleNo() {
-    navigate("/home");
+    navigate("/");
   }
 
   return (

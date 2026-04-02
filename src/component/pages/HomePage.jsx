@@ -1,4 +1,3 @@
-import Carousel from "../Carousel";
 import Header from "../Header";
 import Sidebar from "../siderbar/Sidebar";
 import { Box, Typography, Paper } from "@mui/material";
@@ -24,7 +23,6 @@ function Home() {
             <Typography variant="h5" fontWeight="600">
               Home
             </Typography>
-            <Carousel />
           </Paper>
         </Box>
       </Box>
