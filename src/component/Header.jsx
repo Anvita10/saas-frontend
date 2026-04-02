@@ -13,42 +13,72 @@ function Header() {
 
   return (
     <AppBar
-      position="static"
-      elevation={2}
+      position="sticky"
+      elevation={0}
       sx={{
-        bgcolor: "#ffffff",
-        color: "#333",
-        px: 2,
+        background: "rgba(255,255,255,0.8)",
+        backdropFilter: "blur(10px)",
+        borderBottom: "1px solid #e2e8f0",
+        color: "#0f172a",
       }}
     >
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        {/* Left: Logo / Title */}
-        <Typography variant="h6" fontWeight="700">
-          SaaS Tech
+      <Toolbar
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          px: { xs: 2, md: 4 },
+          py: 1,
+        }}
+      >
+        {/* Left: Logo */}
+        <Typography
+          variant="h6"
+          fontWeight="800"
+          sx={{
+            background: "linear-gradient(90deg, #6366f1, #06b6d4)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            cursor: "pointer",
+          }}
+          onClick={() => navigate("/")}
+        >
+          ⚡ SaaS Tech
         </Typography>
 
-        {/* Right: Logout Button */}
-        <Box>
+        {/* Right: Actions */}
+        <Box sx={{ display: "flex", gap: 2 }}>
+          {!token && (
+            <Button
+              variant="outlined"
+              onClick={() => handleButton("signup")}
+              sx={{
+                textTransform: "none",
+                borderRadius: "10px",
+                px: 3,
+                borderColor: "#6366f1",
+                color: "#6366f1",
+                "&:hover": {
+                  backgroundColor: "#eef2ff",
+                  borderColor: "#6366f1",
+                },
+              }}
+            >
+              Sign Up
+            </Button>
+          )}
+
           <Button
             variant="contained"
-            color="error"
-            onClick={() => handleButton("signup")}
-            sx={{
-              textTransform: "none",
-              borderRadius: 2,
-              px: 3,
-            }}
-          >
-            Sign Up
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
             onClick={() => handleButton(token ? "logout" : "login")}
             sx={{
               textTransform: "none",
-              borderRadius: 2,
+              borderRadius: "10px",
               px: 3,
+              background: "linear-gradient(90deg, #6366f1, #06b6d4)",
+              boxShadow: "0 4px 12px rgba(99,102,241,0.3)",
+              "&:hover": {
+                background: "linear-gradient(90deg, #4f46e5, #0891b2)",
+              },
             }}
           >
             {token ? "Logout" : "Login"}

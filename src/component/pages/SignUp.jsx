@@ -1,7 +1,19 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, TextField, Button, Typography, Paper } from "@mui/material";
-import { Alert } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Paper,
+  Alert,
+  Stack,
+  InputAdornment,
+} from "@mui/material";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import useApiClient from "../../hooks/useApiClient";
 
 function SignUp() {
@@ -61,83 +73,164 @@ function SignUp() {
       display="flex"
       justifyContent="center"
       alignItems="center"
-      height="100vh"
-      sx={{ background: "#f5f6fa" }}
+      minHeight="100vh"
+      sx={{
+        backgroundColor: "#f8fafc",
+        backgroundImage: `radial-gradient(at 0% 0%, hsla(210,100%,98%,1) 0, transparent 50%), 
+                          radial-gradient(at 50% 0%, hsla(220,100%,97%,1) 0, transparent 50%)`,
+      }}
     >
       <Paper
-        elevation={6}
+        elevation={3}
         sx={{
-          padding: 4,
-          width: 340,
+          p: 5,
+          width: 400,
           borderRadius: 3,
+          border: "1px solid",
+          borderColor: "divider",
+          boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
         }}
       >
-        <Typography variant="h5" fontWeight="600" mb={3} textAlign="center">
-          Sign Up
-        </Typography>
-        {error.creds && <Alert severity="error">{error.creds}</Alert>}
+        <Stack spacing={1} alignItems="center" mb={4}>
+          <Typography
+            variant="h4"
+            fontWeight="700"
+            sx={{ color: "text.primary", letterSpacing: "-0.5px" }}
+          >
+            Create Account
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Join our modern SaaS platform today
+          </Typography>
+        </Stack>
 
-        <TextField
-          fullWidth
-          type="text"
-          label="Name"
-          margin="normal"
-          name="name"
-          value={form.name}
-          onChange={(e) => handleFormChange(e)}
-          error={Boolean(error.name)}
-          helperText={error.name}
-        />
+        {error.creds && (
+          <Alert
+            severity="error"
+            variant="outlined"
+            sx={{ mb: 3, borderRadius: 2, fontWeight: 500 }}
+          >
+            {error.creds}
+          </Alert>
+        )}
 
-        <TextField
-          fullWidth
-          type="email"
-          label="Email"
-          margin="normal"
-          name="email"
-          value={form.email}
-          onChange={(e) => handleFormChange(e)}
-          error={Boolean(error.email)}
-          helperText={error.email}
-        />
+        <Stack spacing={2.5}>
+          <TextField
+            fullWidth
+            label="Full Name"
+            name="name"
+            placeholder="John Doe"
+            value={form.name}
+            onChange={handleFormChange}
+            error={Boolean(error.name)}
+            helperText={error.name}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PersonOutlineIcon fontSize="small" color="action" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+          />
 
-        <TextField
-          fullWidth
-          type="tel"
-          label="Phone No"
-          margin="normal"
-          name="phoneNo"
-          value={form.phoneNo}
-          onChange={(e) => handleFormChange(e)}
-          error={Boolean(error.phoneNo)}
-          helperText={error.phoneNo}
-        />
+          <TextField
+            fullWidth
+            label="Email Address"
+            name="email"
+            placeholder="name@company.com"
+            value={form.email}
+            onChange={handleFormChange}
+            error={Boolean(error.email)}
+            helperText={error.email}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <MailOutlineIcon fontSize="small" color="action" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+          />
 
-        <TextField
-          fullWidth
-          type="password"
-          label="Password"
-          margin="normal"
-          name="password"
-          value={form.password}
-          onChange={(e) => handleFormChange(e)}
-          error={Boolean(error.password)}
-          helperText={error.password}
-        />
+          <TextField
+            fullWidth
+            label="Phone Number"
+            name="phoneNo"
+            placeholder="+1 (555) 000-0000"
+            value={form.phoneNo}
+            onChange={handleFormChange}
+            error={Boolean(error.phoneNo)}
+            helperText={error.phoneNo}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PhoneAndroidIcon fontSize="small" color="action" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+          />
 
-        <Button
-          fullWidth
-          variant="contained"
-          sx={{
-            mt: 3,
-            textTransform: "none",
-            borderRadius: 2,
-            padding: "10px",
-          }}
-          onClick={handleClick}
-        >
-          Sign Up
-        </Button>
+          <TextField
+            fullWidth
+            type="password"
+            label="Password"
+            name="password"
+            placeholder="••••••••"
+            value={form.password}
+            onChange={handleFormChange}
+            error={Boolean(error.password)}
+            helperText={error.password}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockOutlinedIcon fontSize="small" color="action" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+          />
+
+          <Button
+            fullWidth
+            variant="contained"
+            size="large"
+            onClick={handleClick}
+            sx={{
+              mt: 2,
+              py: 1.5,
+              textTransform: "none",
+              borderRadius: 2.5,
+              fontWeight: 700,
+              fontSize: "1rem",
+              boxShadow: "0 4px 12px rgba(37, 99, 235, 0.2)",
+              background: "linear-gradient(45deg, #2563eb 30%, #3b82f6 90%)",
+              "&:hover": {
+                background: "linear-gradient(45deg, #1d4ed8 30%, #2563eb 90%)",
+                boxShadow: "0 6px 16px rgba(37, 99, 235, 0.3)",
+              },
+            }}
+          >
+            Sign Up
+          </Button>
+
+          <Typography variant="body2" color="text.secondary" textAlign="center" pt={1}>
+            Already have an account?{" "}
+            <Box
+              component="span"
+              sx={{
+                color: "primary.main",
+                fontWeight: 600,
+                cursor: "pointer",
+                "&:hover": { textDecoration: "underline" },
+              }}
+              onClick={() => navigate("/login")}
+            >
+              Log in
+            </Box>
+          </Typography>
+        </Stack>
       </Paper>
     </Box>
   );

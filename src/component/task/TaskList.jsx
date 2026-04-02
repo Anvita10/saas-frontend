@@ -2,12 +2,13 @@ import {
   Box,
   Button,
   Typography,
-  Card,
-  CardContent,
+  Paper,
   Grid,
   MenuItem,
   Chip,
   TextField,
+  Stack,
+  Divider,
 } from "@mui/material";
 import useApiClient from "../../hooks/useApiClient";
 
@@ -18,12 +19,10 @@ export default function TaskList({ task, fetchTask }) {
 
   const handleSelect = async (e, id) => {
     const updatedStatus = e.target.value;
-
     const response = await apiClient(`/tasks/${id}`, {
       method: "PUT",
       body: { status: updatedStatus },
     });
-
     if (response.success) fetchTask();
   };
 
@@ -34,85 +33,127 @@ export default function TaskList({ task, fetchTask }) {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "Completed":
-        return "success";
-      case "Pending":
-        return "warning";
-      case "Rejected":
-        return "error";
-      case "In-progress":
-        return "info";
-      default:
-        return "default";
+      case "Completed": return { color: "success" };
+      case "Pending": return { color: "warning" };
+      case "Rejected": return { color: "error" };
+      case "In-progress": return { color: "info" };
+      default: return { color: "default" };
     }
   };
 
   return (
-    <Grid container spacing={3}>
-      {task.map((val) => (
-        <Grid item xs={12} sm={6} md={4} key={val._id}>
-          <Card
-            sx={{
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              borderRadius: 3,
-              border: "1px solid #eee",
-              p: 1,
-              transition: "0.3s",
-              "&:hover": {
-                transform: "translateY(-6px)",
-                boxShadow: "0 12px 25px rgba(0,0,0,0.1)",
-              },
-            }}
-          >
-            <CardContent>
-              {/* Category */}
-              <Chip label={val.category} size="small" sx={{ mb: 1 }} />
+    <Box sx={{ width: "100%", mt: 2 }}>
+      <Grid 
+        container 
+        spacing={3} 
+        sx={{ 
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "repeat(1, 1fr)",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(3, 1fr)"
+          },
+          gap: 3, 
+          width: "100%",
+          margin: 0
+        }}
+      >
+        {task.map((val) => (
+          <Box key={val._id} sx={{ minWidth: 0, display: "flex" }}> 
+            <Paper
+              elevation={0}
+              sx={{
+                width: "100%", 
+                display: "flex",
+                flexDirection: "column",
+                borderRadius: 4,
+                overflow: "hidden",
+                border: "1px solid",
+                borderColor: "divider",
+                transition: "transform 0.2s, box-shadow 0.2s",
+                "&:hover": {
+                  transform: "translateY(-4px)",
+                  boxShadow: "0 10px 20px rgba(0,0,0,0.08)",
+                },
+              }}
+            >
+              <Box sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ fontWeight: 800, color: "text.secondary", textTransform: 'uppercase' }}
+                  >
+                    {val.category || "General"}
+                  </Typography>
+                  <Chip
+                    label={val.status}
+                    size="small"
+                    color={getStatusColor(val.status).color}
+                    sx={{ fontWeight: 700, borderRadius: 1.5, height: 22, fontSize: "0.65rem" }}
+                  />
+                </Stack>
 
-              {/* Title */}
-              <Typography variant="h6" fontWeight="600" sx={{ mb: 1 }}>
-                {val.title}
-              </Typography>
+                <Box sx={{ height: '55px', overflow: 'hidden', mb: 1 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 700,
+                      color: "#1e293b",
+                      lineHeight: 1.2,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {val.title}
+                  </Typography>
+                </Box>
+              </Box>
 
-              {/* Status */}
-              <Chip
-                label={val.status}
-                color={getStatusColor(val.status)}
-                size="small"
-              />
-            </CardContent>
+              <Divider sx={{ borderStyle: "dashed", opacity: 0.6 }} />
 
-            {/* Bottom Actions */}
-            <Box sx={{ p: 2 }}>
-              <TextField
-                select
-                fullWidth
-                size="small"
-                value={val.status}
-                onChange={(e) => handleSelect(e, val._id)}
-                sx={{ mb: 1 }}
-              >
-                {options.map((opt) => (
-                  <MenuItem key={opt} value={opt}>
-                    {opt}
-                  </MenuItem>
-                ))}
-              </TextField>
+              <Box sx={{ p: 2.5, bgcolor: "#fcfcfc" }}>
+                <Stack spacing={2}>
+                  <TextField
+                    select
+                    fullWidth
+                    size="small"
+                    label="Update Status"
+                    value={val.status}
+                    onChange={(e) => handleSelect(e, val._id)}
+                    sx={{ 
+                        bgcolor: "white",
+                        "& .MuiOutlinedInput-root": { borderRadius: 2 } 
+                    }}
+                  >
+                    {options.map((opt) => (
+                      <MenuItem key={opt} value={opt} sx={{ fontSize: '0.85rem' }}>
+                        {opt}
+                      </MenuItem>
+                    ))}
+                  </TextField>
 
-              <Button
-                fullWidth
-                variant="outlined"
-                color="error"
-                onClick={() => handleDelete(val._id)}
-              >
-                Delete
-              </Button>
-            </Box>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
+                  <Button
+                    fullWidth
+                    variant="text"
+                    color="error"
+                    size="small"
+                    onClick={() => handleDelete(val._id)}
+                    sx={{ 
+                        fontWeight: 700, 
+                        textTransform: "none",
+                        py: 0.5
+                    }}
+                  >
+                    Remove Task
+                  </Button>
+                </Stack>
+              </Box>
+            </Paper>
+          </Box>
+        ))}
+      </Grid>
+    </Box>
   );
 }
