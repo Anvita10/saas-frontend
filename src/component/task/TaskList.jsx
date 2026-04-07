@@ -3,7 +3,6 @@ import {
   Button,
   Typography,
   Paper,
-  Grid,
   MenuItem,
   Chip,
   TextField,
@@ -18,142 +17,184 @@ export default function TaskList({ task, fetchTask }) {
   const options = ["Completed", "Pending", "ToDo", "Rejected", "In-progress"];
 
   const handleSelect = async (e, id) => {
-    const updatedStatus = e.target.value;
-    const response = await apiClient(`/tasks/${id}`, {
-      method: "PUT",
-      body: { status: updatedStatus },
-    });
-    if (response.success) fetchTask();
+    try {
+      const updatedStatus = e.target.value;
+      const response = await apiClient(`/tasks/${id}`, {
+        method: "PUT",
+        body: { status: updatedStatus },
+      });
+      if (response.success) fetchTask();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleDelete = async (id) => {
-    await apiClient(`/tasks/${id}`, { method: "DELETE" });
-    fetchTask();
+    try {
+      await apiClient(`/tasks/${id}`, { method: "DELETE" });
+      fetchTask();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "Completed": return { color: "success" };
-      case "Pending": return { color: "warning" };
-      case "Rejected": return { color: "error" };
-      case "In-progress": return { color: "info" };
-      default: return { color: "default" };
+      case "Completed": return "success";
+      case "Pending": return "warning";
+      case "Rejected": return "error";
+      case "In-progress": return "info";
+      default: return "default";
     }
   };
 
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case "High": return "error";
+      case "Medium": return "warning";
+      case "Low": return "success";
+      default: return "default";
+    }
+  };
+
+  if (!task.length) {
+    return (
+      <Typography sx={{ mt: 3, textAlign: "center" }}>
+        No tasks yet
+      </Typography>
+    );
+  }
+
   return (
-    <Box sx={{ width: "100%", mt: 2 }}>
-      <Grid 
-        container 
-        spacing={3} 
-        sx={{ 
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "repeat(1, 1fr)",
-            sm: "repeat(2, 1fr)",
-            md: "repeat(3, 1fr)"
-          },
-          gap: 3, 
-          width: "100%",
-          margin: 0
-        }}
-      >
-        {task.map((val) => (
-          <Box key={val._id} sx={{ minWidth: 0, display: "flex" }}> 
-            <Paper
-              elevation={0}
-              sx={{
-                width: "100%", 
-                display: "flex",
-                flexDirection: "column",
-                borderRadius: 4,
-                overflow: "hidden",
-                border: "1px solid",
-                borderColor: "divider",
-                transition: "transform 0.2s, box-shadow 0.2s",
-                "&:hover": {
-                  transform: "translateY(-4px)",
-                  boxShadow: "0 10px 20px rgba(0,0,0,0.08)",
-                },
-              }}
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: {
+          xs: "1fr",
+          sm: "repeat(2, 1fr)",
+          md: "repeat(3, 1fr)",
+        },
+        gap: 3,
+        mt: 2,
+      }}
+    >
+      {task.map((val) => (
+        <Paper
+          key={val._id}
+          elevation={0}
+          sx={{
+            borderRadius: 4,
+            border: "1px solid",
+            borderColor: "divider",
+            overflow: "hidden",
+            transition: "0.2s",
+            "&:hover": {
+              transform: "translateY(-4px)",
+              boxShadow: "0 10px 20px rgba(0,0,0,0.08)",
+            },
+          }}
+        >
+          {/* TOP */}
+          <Box sx={{ p: 2.5 }}>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={1}
             >
-              <Box sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                  <Typography
-                    variant="caption"
-                    sx={{ fontWeight: 800, color: "text.secondary", textTransform: 'uppercase' }}
-                  >
-                    {val.category || "General"}
-                  </Typography>
+              <Typography variant="caption" fontWeight={700}>
+                {val.category || "General"}
+              </Typography>
+
+              <Chip
+                label={val.status}
+                size="small"
+                color={getStatusColor(val.status)}
+              />
+            </Stack>
+
+            {/* TITLE */}
+            <Typography variant="h6" fontWeight={700}>
+              {val.title}
+            </Typography>
+
+            {/* DESCRIPTION */}
+            {val.description && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                mt={0.5}
+              >
+                {val.description}
+              </Typography>
+            )}
+
+            {/* META */}
+            <Stack spacing={1} mt={2}>
+              {val.assignedTo && (
+                <Typography variant="caption">
+                  Assigned To: <b>{val.assignedTo}</b>
+                </Typography>
+              )}
+
+              {val.assignedBy && (
+                <Typography variant="caption">
+                  Assigned By: <b>{val.assignedBy}</b>
+                </Typography>
+              )}
+
+              {val.dueDate && (
+                <Typography variant="caption">
+                  Due:{" "}
+                  <b>
+                    {new Date(val.dueDate).toLocaleDateString()}
+                  </b>
+                </Typography>
+              )}
+
+              <Stack direction="row" spacing={1}>
+                {val.priority && (
                   <Chip
-                    label={val.status}
+                    label={val.priority}
                     size="small"
-                    color={getStatusColor(val.status).color}
-                    sx={{ fontWeight: 700, borderRadius: 1.5, height: 22, fontSize: "0.65rem" }}
+                    color={getPriorityColor(val.priority)}
                   />
-                </Stack>
-
-                <Box sx={{ height: '55px', overflow: 'hidden', mb: 1 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: 700,
-                      color: "#1e293b",
-                      lineHeight: 1.2,
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {val.title}
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Divider sx={{ borderStyle: "dashed", opacity: 0.6 }} />
-
-              <Box sx={{ p: 2.5, bgcolor: "#fcfcfc" }}>
-                <Stack spacing={2}>
-                  <TextField
-                    select
-                    fullWidth
-                    size="small"
-                    label="Update Status"
-                    value={val.status}
-                    onChange={(e) => handleSelect(e, val._id)}
-                    sx={{ 
-                        bgcolor: "white",
-                        "& .MuiOutlinedInput-root": { borderRadius: 2 } 
-                    }}
-                  >
-                    {options.map((opt) => (
-                      <MenuItem key={opt} value={opt} sx={{ fontSize: '0.85rem' }}>
-                        {opt}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-
-                  <Button
-                    fullWidth
-                    variant="text"
-                    color="error"
-                    size="small"
-                    onClick={() => handleDelete(val._id)}
-                    sx={{ 
-                        fontWeight: 700, 
-                        textTransform: "none",
-                        py: 0.5
-                    }}
-                  >
-                    Remove Task
-                  </Button>
-                </Stack>
-              </Box>
-            </Paper>
+                )}
+              </Stack>
+            </Stack>
           </Box>
-        ))}
-      </Grid>
+
+          <Divider />
+
+          {/* ACTIONS */}
+          <Box sx={{ p: 2 }}>
+            <Stack spacing={2}>
+              <TextField
+                select
+                fullWidth
+                size="small"
+                label="Update Status"
+                value={val.status}
+                onChange={(e) => handleSelect(e, val._id)}
+              >
+                {options.map((opt) => (
+                  <MenuItem key={opt} value={opt}>
+                    {opt}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <Button
+                fullWidth
+                color="error"
+                onClick={() => handleDelete(val._id)}
+              >
+                Remove Task
+              </Button>
+            </Stack>
+          </Box>
+        </Paper>
+      ))}
     </Box>
   );
 }
