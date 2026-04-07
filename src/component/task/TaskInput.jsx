@@ -9,32 +9,70 @@ import {
   Typography,
   InputAdornment,
 } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CategoryIcon from "@mui/icons-material/Category";
 
 export default function TaskInput({ categoryList, onAddTask }) {
-  const [newTask, setNewTask] = useState("");
-  const [category, setCategory] = useState("");
-  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    assignedTo: "",
+    priority: "Medium",
+    category: "",
+    dueDate: null,
+  });
+
+  const [error, setError] = useState({ title: "", description: "" });
+
+  const priorityList = ["Low", "Medium", "High"];
 
   const handleClick = async () => {
-    if (!newTask.trim()) {
-      setError("Please Enter the task");
+    const newErrors = { title: "", description: "" };
+
+    if (!form.title.trim()) newErrors.title = "Title is required";
+    if (!form.description.trim()) newErrors.description = "Description is required";
+
+    if (newErrors.title || newErrors.description) {
+      setError(newErrors);
       return;
     }
 
-    if (!category) {
-      setError("Please select the category");
-      return;
-    }
+    const payload = {
+      title: form.title.trim(),
+      description: form.description.trim(),
+      priority: form.priority,
+    };
+
+    if (form.assignedTo) payload.assignedTo = form.assignedTo;
+    if (form.category) payload.category = form.category;
+    if (form.dueDate) payload.dueDate = form.dueDate.toISOString();
 
     try {
-      await onAddTask({ title: newTask.trim(), category });
-      setNewTask("");
-      setCategory("");
-      setError("");
+      await onAddTask(payload);
+
+      setForm({
+        title: "",
+        description: "",
+        assignedTo: "",
+        priority: "Medium",
+        category: "",
+        dueDate: null,
+      });
+
+      setError({ title: "", description: "" });
     } catch (err) {
-      setError("Something went wrong");
+      alert("Something went wrong");
+    }
+  };
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+
+    setForm((prev) => ({ ...prev, [name]: value }));
+
+    if (name in error) {
+      setError((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -50,62 +88,58 @@ export default function TaskInput({ categoryList, onAddTask }) {
       }}
     >
       <Stack spacing={3}>
-        <Box>
-          <Typography
-            variant="subtitle2"
-            sx={{ fontWeight: 700, mb: 1, color: "text.primary" }}
-          >
-            Create New Task
-          </Typography>
-          <TextField
-            fullWidth
-            placeholder="What needs to be done?"
-            value={newTask}
-            onChange={(e) => {
-              setError("");
-              setNewTask(e.target.value);
-            }}
-            error={Boolean(error)}
-            helperText={error}
-            variant="outlined"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-                backgroundColor: "#f8fafc",
-              },
-            }}
-          />
-        </Box>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+          Create New Task
+        </Typography>
 
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={2}
-          alignItems="flex-start"
-        >
+        {/* Title */}
+        <TextField
+          fullWidth
+          label="Title"
+          placeholder="What needs to be done?"
+          value={form.title}
+          name="title"
+          onChange={handleFormChange}
+          error={Boolean(error.title)}
+          helperText={error.title}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2,
+              backgroundColor: "#f8fafc",
+            },
+          }}
+        />
+
+        {/* Description */}
+        <TextField
+          fullWidth
+          multiline
+          minRows={3}
+          label="Description"
+          placeholder="Add more details..."
+          value={form.description}
+          name="description"
+          onChange={handleFormChange}
+          error={Boolean(error.description)}
+          helperText={error.description}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2,
+              backgroundColor: "#f8fafc",
+            },
+          }}
+        />
+
+        {/* Row 1 */}
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
           <TextField
             select
             fullWidth
-            label="Category"
-            size="small"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            sx={{
-              minWidth: { sm: 200 },
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-              },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <CategoryIcon fontSize="small" color="action" />
-                </InputAdornment>
-              ),
-            }}
+            label="Assigned To"
+            name="assignedTo"
+            value={form.assignedTo}
+            onChange={handleFormChange}
           >
-            <MenuItem value="" disabled>
-              Select Category
-            </MenuItem>
             {categoryList.map((val, idx) => (
               <MenuItem key={idx} value={val}>
                 {val}
@@ -113,32 +147,81 @@ export default function TaskInput({ categoryList, onAddTask }) {
             ))}
           </TextField>
 
+          <TextField
+            select
+            fullWidth
+            label="Priority"
+            name="priority"
+            value={form.priority}
+            onChange={handleFormChange}
+          >
+            {priorityList.map((val, idx) => (
+              <MenuItem key={idx} value={val}>
+                {val}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Stack>
+
+        {/* Row 2 */}
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+          <TextField
+            select
+            fullWidth
+            label="Category"
+            name="category"
+            value={form.category}
+            onChange={handleFormChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <CategoryIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+          >
+            <MenuItem value="">Select Category</MenuItem>
+            {categoryList.map((val, idx) => (
+              <MenuItem key={idx} value={val}>
+                {val}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <DatePicker
+            label="Due Date"
+            value={form.dueDate}
+            onChange={(val) =>
+              setForm((prev) => ({ ...prev, dueDate: val }))
+            }
+            disablePast
+          />
+        </Stack>
+
+        {/* Button */}
+        <Box>
           <Button
             variant="contained"
             fullWidth
             size="large"
             onClick={handleClick}
-            disabled={!newTask.trim() || !category}
+            disabled={!form.title.trim() || !form.description.trim()}
             startIcon={<AddCircleOutlineIcon />}
             sx={{
               borderRadius: 2,
               textTransform: "none",
               fontWeight: 600,
-              px: 4,
-              height: 40,
+              height: 44,
               boxShadow: "none",
               background: "linear-gradient(45deg, #2563eb 30%, #3b82f6 90%)",
               "&:hover": {
                 boxShadow: "0 4px 12px rgba(37, 99, 235, 0.2)",
               },
-              "&.Mui-disabled": {
-                background: "#e2e8f0",
-              },
             }}
           >
             Add Task
           </Button>
-        </Stack>
+        </Box>
       </Stack>
     </Paper>
   );
