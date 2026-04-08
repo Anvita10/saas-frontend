@@ -22,26 +22,26 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 function TaskPage() {
   const [task, setTask] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const apiClient = useApiClient();
 
   const fetchTask = async () => {
-    const res = await apiClient("/tasks");
-    setTask(res);
+    // const res = await apiClient("/tasks");
+    // setTask(res);
   };
 
   const fetchCategoryList = async () => {
-    const res = await apiClient("/tasks/categorylist");
-    setCategoryList(res.data);
+    // const res = await apiClient("/tasks/categorylist");
+    // setCategoryList(res.data);
   };
 
-  useEffect(() => {
-    const init = async () => {
-      await Promise.all([fetchTask(), fetchCategoryList()]);
-      setLoading(false);
-    };
-    init();
-  }, []);
+  // useEffect(() => {
+  //   const init = async () => {
+  //     await Promise.all([fetchTask(), fetchCategoryList()]);
+  //     setLoading(false);
+  //   };
+  //   init();
+  // }, []);
 
   const handleAddTask = async ({ title, category }) => {
     await apiClient("/tasks", {
@@ -51,25 +51,25 @@ function TaskPage() {
     fetchTask();
   };
 
-  if (loading)
-    return (
-      <Box
-        sx={{
-          height: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-          justifyContent: "center",
-          alignItems: "center",
-          bgcolor: "#f8fafc",
-        }}
-      >
-        <CircularProgress thickness={4} size={48} sx={{ color: "primary.main" }} />
-        <Typography variant="body2" color="text.secondary" fontWeight="500">
-          Loading your workspace...
-        </Typography>
-      </Box>
-    );
+  // if (loading)
+  //   return (
+  //     <Box
+  //       sx={{
+  //         height: "100vh",
+  //         display: "flex",
+  //         flexDirection: "column",
+  //         gap: 2,
+  //         justifyContent: "center",
+  //         alignItems: "center",
+  //         bgcolor: "#f8fafc",
+  //       }}
+  //     >
+  //       <CircularProgress thickness={4} size={48} sx={{ color: "primary.main" }} />
+  //       <Typography variant="body2" color="text.secondary" fontWeight="500">
+  //         Loading your workspace...
+  //       </Typography>
+  //     </Box>
+  //   );
 
   return (
     <Box sx={{ display: "flex", bgcolor: "#f8fafc", minHeight: "100vh" }}>
