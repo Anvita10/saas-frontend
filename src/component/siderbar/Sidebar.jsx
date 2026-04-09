@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   Drawer,
   List,
@@ -14,11 +14,13 @@ import {
   DialogContent,
 } from "@mui/material";
 import CreateWorkspace from "../workspace/CreateWorkspace";
+import { AuthContext } from "../../context/AuthContext";
 
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const { token } = useContext(AuthContext);
 
   const menuItems = [
     { id: 1, title: "Dashboard", path: "/dashboard" },
@@ -72,6 +74,7 @@ function Sidebar() {
               color: "#a78bfa",
               border: "1px dashed rgba(167,139,250,0.5)",
             }}
+            disabled={!token}
           >
             + Create Workspace
           </Button>
@@ -146,4 +149,3 @@ function Sidebar() {
 }
 
 export default Sidebar;
-
