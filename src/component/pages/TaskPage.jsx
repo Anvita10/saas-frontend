@@ -1,209 +1,248 @@
 import React, { useEffect, useState } from "react";
-import Sidebar from "../siderbar/Sidebar";
-import Header from "../Header";
 import {
   Box,
-  Grid,
   Typography,
   Paper,
   Stack,
-  CircularProgress,
   Container,
   Fade,
+  Chip,
+  useTheme,
+  Divider,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
 } from "@mui/material";
 import TaskList from "../task/TaskList";
 import useApiClient from "../../hooks/useApiClient";
 import TaskInput from "../task/TaskInput";
-import AiTaskSuggest from "../task/AiTaskSuggest";
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import AddIcon from "@mui/icons-material/Add";
+import TuneIcon from "@mui/icons-material/Tune";
+import CloseIcon from "@mui/icons-material/Close";
+import { useParams } from "react-router-dom";
+import TaskFilter from "../task/TaskFilter";
 
 function TaskPage() {
   const [task, setTask] = useState([]);
-  const [categoryList, setCategoryList] = useState([]);
-  // const [loading, setLoading] = useState(true);
+  const [isFiltered, setIsFiltered] = useState(false);
+  const [members, SetMembers] = useState([]);
+  const [openCreate, setOpenCreate] = useState(false); // Modal State
+  const status = ["Completed", "Pending", "In-Progress", "ToDo", "Rejected"];
+  const { workspaceId } = useParams();
   const apiClient = useApiClient();
+  const theme = useTheme();
 
-  const fetchTask = async () => {
-    // const res = await apiClient("/tasks");
-    // setTask(res);
+  const fetchTask = async (queryString = "") => {
+    try {
+      const url = queryString
+        ? `/workspaces/${workspaceId}/tasks?${queryString}`
+        : `/workspaces/${workspaceId}/tasks`;
+
+      const res = await apiClient(url);
+      if (res.data) setTask(res.data);
+      setIsFiltered(!!queryString);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  const fetchCategoryList = async () => {
-    // const res = await apiClient("/tasks/categorylist");
-    // setCategoryList(res.data);
+  const fetchUsers = async () => {
+    try {
+      const res = await apiClient(`/workspaces/${workspaceId}/members`);
+      if (res.data) SetMembers(res.data);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  // useEffect(() => {
-  //   const init = async () => {
-  //     await Promise.all([fetchTask(), fetchCategoryList()]);
-  //     setLoading(false);
-  //   };
-  //   init();
-  // }, []);
-
-  const handleAddTask = async ({ title, category }) => {
-    await apiClient("/tasks", {
-      method: "POST",
-      body: { title, category },
-    });
+  useEffect(() => {
+    fetchUsers();
     fetchTask();
-  };
+  }, [workspaceId]);
 
-  // if (loading)
-  //   return (
-  //     <Box
-  //       sx={{
-  //         height: "100vh",
-  //         display: "flex",
-  //         flexDirection: "column",
-  //         gap: 2,
-  //         justifyContent: "center",
-  //         alignItems: "center",
-  //         bgcolor: "#f8fafc",
-  //       }}
-  //     >
-  //       <CircularProgress thickness={4} size={48} sx={{ color: "primary.main" }} />
-  //       <Typography variant="body2" color="text.secondary" fontWeight="500">
-  //         Loading your workspace...
-  //       </Typography>
-  //     </Box>
-  //   );
+  const handleAddTask = async (payload) => {
+    const res = await apiClient(`/workspaces/${workspaceId}/tasks`, {
+      method: "POST",
+      body: payload,
+    });
+    if (res.success) {
+      setOpenCreate(false); // Close modal on success
+      fetchTask();
+    }
+  };
 
   return (
-    <Box sx={{ display: "flex", bgcolor: "#f8fafc", minHeight: "100vh" }}>
-      <Sidebar />
-
+    <Box sx={{ bgcolor: "#f8fafc", minHeight: "100vh", pb: 10 }}>
+      {/* HEADER SECTION */}
       <Box
-        component="main"
         sx={{
-          flexGrow: 1,
-          ml: { xs: 0 },
-          width: { xs: "100%", md: `calc(100% - 220px)` },
+          bgcolor: "#fff",
+          borderBottom: "1px solid #e2e8f0",
+          mb: 4,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
         }}
       >
-        <Header />
-
-        <Container maxWidth="xl" sx={{ py: 4 }}>
-          <Box mb={4}>
-            <Stack direction="row" alignItems="center" spacing={1.5} mb={0.5}>
-              <AssignmentTurnedInIcon color="primary" sx={{ fontSize: 32 }} />
-              <Typography variant="h4" sx={{ fontWeight: 800, color: "#1e293b" }}>
-                Task Manager
-              </Typography>
-            </Stack>
-            <Typography variant="body1" sx={{ color: "text.secondary", ml: 5.5 }}>
-              Organize your work efficiently and boost your productivity 🚀
-            </Typography>
-          </Box>
-
-          <Stack spacing={6}>
-            <Grid container spacing={6}>
-              <Grid item xs={12} md={7}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 4,
-                    height: "100%",
-                    borderRadius: 4,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    bgcolor: "background.paper",
-                    boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
-                  }}
+        <Container maxWidth="xl" sx={{ py: 2 }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Box
+                sx={{
+                  bgcolor: "#6366f1",
+                  p: 1,
+                  borderRadius: 2,
+                  display: "flex",
+                  boxShadow: "0 4px 12px rgba(99, 102, 241, 0.3)",
+                }}
+              >
+                <AssignmentTurnedInIcon sx={{ color: "#fff" }} />
+              </Box>
+              <Box>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}
                 >
-                  <Stack direction="row" alignItems="center" spacing={1.5} mb={3}>
-                    <AddCircleOutlineIcon color="primary" fontSize="small" />
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: "#334155" }}>
-                      Create New Task
-                    </Typography>
-                  </Stack>
-                  <TaskInput categoryList={categoryList} onAddTask={handleAddTask} />
-                </Paper>
-              </Grid>
-
-              <Grid item xs={12} md={5}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 4, 
-                    height: "100%",
-                    borderRadius: 4,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    bgcolor: "rgba(99, 102, 241, 0.03)",
-                    boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
-                  }}
-                >
-                  <Stack direction="row" alignItems="center" spacing={1.5} mb={3}>
-                    <AutoAwesomeIcon sx={{ color: "#6366f1", fontSize: "1.2rem" }} />
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: "#4338ca" }}>
-                      AI Quick Suggest
-                    </Typography>
-                  </Stack>
-                  <Box sx={{ mb: 3 }}>
-                    <AiTaskSuggest categoryList={categoryList} onAddTask={handleAddTask} />
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", opacity: 0.8 }}>
-                    Pick a category and let AI suggest your next big task.
-                  </Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-
-            <Box>
-              <Stack direction="row" alignItems="center" justifyContent="space-between" mb={4} px={1}>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: "#1e293b" }}>
-                  Your Workspace
+                  Task Manager
                 </Typography>
-                <Box
-                  sx={{
-                    bgcolor: "primary.main",
-                    color: "white",
-                    px: 2.5,
-                    py: 0.7,
-                    borderRadius: 3,
-                    fontWeight: 700,
-                    fontSize: "0.9rem",
-                    boxShadow: "0 4px 12px rgba(37, 99, 235, 0.2)",
-                  }}
+                <Typography
+                  variant="caption"
+                  sx={{ color: "#64748b", fontWeight: 600 }}
                 >
-                  {task.length} Tasks Found
-                </Box>
-              </Stack>
+                  {isFiltered ? "Filtered View" : "All Operations"}
+                </Typography>
+              </Box>
+            </Stack>
 
-              {task.length === 0 ? (
-                <Fade in timeout={600}>
-                  <Paper
-                    variant="outlined"
-                    sx={{
-                      p: 12,
-                      textAlign: "center",
-                      borderRadius: 5,
-                      borderStyle: "dashed",
-                      borderWidth: 2,
-                      bgcolor: "transparent",
-                    }}
-                  >
-                    <AssignmentTurnedInIcon sx={{ fontSize: 60, color: "text.disabled", mb: 2, opacity: 0.5 }} />
-                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-                      Your list is empty
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                      Ready to start? Use the forms above to create your first task.
-                    </Typography>
-                  </Paper>
-                </Fade>
-              ) : (
-                <Box sx={{ minHeight: 400 }}>
-                  <TaskList task={task} fetchTask={fetchTask} />
-                </Box>
-              )}
-            </Box>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Chip
+                label={`${task.length} Total`}
+                sx={{
+                  fontWeight: 700,
+                  bgcolor: "#f1f5f9",
+                  color: "#475569",
+                  borderRadius: 1.5,
+                }}
+              />
+              <Button
+                variant="contained"
+                disableElevation
+                startIcon={<AddIcon />}
+                onClick={() => setOpenCreate(true)}
+                sx={{
+                  bgcolor: "#1e293b",
+                  textTransform: "none",
+                  fontWeight: 700,
+                  borderRadius: "10px",
+                  px: 3,
+                  "&:hover": { bgcolor: "#0f172a" },
+                }}
+              >
+                New Task
+              </Button>
+            </Stack>
           </Stack>
         </Container>
       </Box>
+
+      <Container maxWidth="xl">
+        <Stack spacing={4}>
+          {/* FILTER PANEL - Now clean and prominent */}
+          <Paper
+            elevation={0}
+            sx={{ p: 3, borderRadius: 4, border: "1px solid #e2e8f0" }}
+          >
+            <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+              <TuneIcon sx={{ fontSize: 20, color: "#6366f1" }} />
+              <Typography
+                variant="subtitle1"
+                sx={{ fontWeight: 800, color: "#1e293b" }}
+              >
+                Quick Filters
+              </Typography>
+            </Stack>
+            <TaskFilter
+              fetchTask={fetchTask}
+              status={status}
+              members={members}
+            />
+          </Paper>
+
+          {/* TASK LIST AREA */}
+          <Box>
+            {task.length === 0 ? (
+              <Fade in>
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    py: 10,
+                    textAlign: "center",
+                    borderRadius: 4,
+                    borderStyle: "dashed",
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    color="text.secondary"
+                    fontWeight={700}
+                  >
+                    No tasks match your criteria
+                  </Typography>
+                  <Button
+                    onClick={() => setOpenCreate(true)}
+                    sx={{ mt: 2, textTransform: "none" }}
+                  >
+                    Create your first task
+                  </Button>
+                </Paper>
+              </Fade>
+            ) : (
+              <TaskList
+                task={task}
+                fetchTask={fetchTask}
+                status={status}
+                members={members}
+              />
+            )}
+          </Box>
+        </Stack>
+      </Container>
+
+      {/* CREATE TASK MODAL - Solves the "Overlapping" and "Design mismatch" */}
+      <Dialog
+        open={openCreate}
+        onClose={() => setOpenCreate(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, p: 1 } }}
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="h6" fontWeight={800}>
+            Create New Task
+          </Typography>
+          <IconButton onClick={() => setOpenCreate(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 1 }}>
+            <TaskInput userList={members} onAddTask={handleAddTask} />
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

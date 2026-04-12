@@ -4,49 +4,18 @@ import {
   Typography,
   Box,
   Button,
-  FormControl,
-  Select,
-  MenuItem,
-  InputAdornment,
+  Avatar,
+  Stack,
+  Tooltip,
 } from "@mui/material";
-import WorkspacesIcon from "@mui/icons-material/Workspaces";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import useApiClient from "../hooks/useApiClient";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 function Header() {
   const navigate = useNavigate();
-  const [workspace, setWorkspace] = useState([]);
-  const [selected, setSelected] = useState("");
-  const { token } = useContext(AuthContext);
-  const apiClient = useApiClient();
-
-  useEffect(() => {
-    if (!token) return;
-
-    const getMyWorkspace = async () => {
-      try {
-        const res = await apiClient("/workspaces");
-        if (res.success) {
-          setWorkspace(res.data);
-          setSelected(res.data[0]?.wsName);
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    getMyWorkspace();
-  }, [token]);
-
-  function handleButton(action) {
-    navigate(`/${action}`);
-  }
-
-  const handleSelect = (e) => {
-    setSelected(e.target.value);
-  };
+  const { token, user } = useContext(AuthContext);
 
   return (
     <AppBar
@@ -54,9 +23,11 @@ function Header() {
       elevation={0}
       sx={{
         background: "rgba(255,255,255,0.8)",
-        backdropFilter: "blur(10px)",
-        borderBottom: "1px solid #e2e8f0",
+        backdropFilter: "blur(12px)",
+        borderBottom: "1px solid",
+        borderColor: "divider",
         color: "#0f172a",
+        zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
     >
       <Toolbar
@@ -64,92 +35,120 @@ function Header() {
           display: "flex",
           justifyContent: "space-between",
           px: { xs: 2, md: 4 },
-          py: 1,
+          minHeight: 70,
         }}
       >
-        {/* LEFT: LOGO */}
+        {/* LOGO - Updated to Taskly Flow */}
         <Typography
           variant="h6"
-          fontWeight="800"
           sx={{
-            background: "linear-gradient(90deg, #6366f1, #06b6d4)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            fontWeight: 900,
+            letterSpacing: "-0.05em",
             cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            fontSize: "1.4rem",
           }}
           onClick={() => navigate("/")}
         >
-          ⚡ SaaS Tech
+          <Box
+            component="span"
+            sx={{
+              background: "linear-gradient(135deg, #0f172a 0%, #1db5c7 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Taskly
+          </Box>
+          <Box component="span" sx={{ color: "#1db5c7" }}>
+            Flow
+          </Box>
         </Typography>
 
         {/* RIGHT SIDE */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          {!token && (
-            <Button
-              variant="outlined"
-              onClick={() => handleButton("signup")}
-              sx={{
-                textTransform: "none",
-                borderRadius: 2,
-                px: 3,
-                borderColor: "#6366f1",
-                color: "#6366f1",
-                "&:hover": {
-                  backgroundColor: "#eef2ff",
-                },
-              }}
-            >
-              Sign Up
-            </Button>
-          )}
+        <Box display="flex" alignItems="center">
+          {token ? (
+            <Stack direction="row" alignItems="center" spacing={3}>
+              {/* USER PROFILE */}
+              <Stack direction="row" alignItems="center" spacing={1.5}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 700,
+                    color: "text.primary",
+                    display: { xs: "none", sm: "block" },
+                  }}
+                >
+                  {user}
+                </Typography>
+                <Tooltip title="Account Settings">
+                  <Avatar
+                    sx={{
+                      width: 38,
+                      height: 38,
+                      bgcolor: "#0f172a",
+                      border: "2px solid #1db5c7",
+                      fontSize: 14,
+                      fontWeight: 800,
+                      cursor: "pointer",
+                      transition: "transform 0.2s",
+                      "&:hover": { transform: "scale(1.05)" },
+                    }}
+                  >
+                    {user?.charAt(0)?.toUpperCase() || "U"}
+                  </Avatar>
+                </Tooltip>
+              </Stack>
 
-          {/* WORKSPACE DROPDOWN */}
-          {workspace.length > 0 && (
-            <FormControl size="small">
-              <Select
-                value={selected || ""}
-                onChange={handleSelect}
-                displayEmpty
+              {/* LOGOUT - Styled to match current brand theme */}
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<LogoutIcon sx={{ fontSize: 18 }} />}
+                onClick={() => navigate("/logout")}
                 sx={{
-                  minWidth: 180,
-                  borderRadius: 2,
-                  backgroundColor: "#f8fafc",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e2e8f0",
+                  textTransform: "none",
+                  borderRadius: 2.5,
+                  px: 2,
+                  py: 0.8,
+                  fontWeight: 700,
+                  color: "#0f172a",
+                  borderColor: "#e2e8f0",
+                  "&:hover": {
+                    borderColor: "#1db5c7",
+                    bgcolor: "rgba(29, 181, 199, 0.04)",
+                    color: "#1db5c7",
                   },
                 }}
-                startAdornment={
-                  <InputAdornment position="start">
-                    <WorkspacesIcon fontSize="small" />
-                  </InputAdornment>
-                }
               >
-                {workspace.map((val) => (
-                  <MenuItem key={val.id} value={val.wsName}>
-                    {val.wsName}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                Logout
+              </Button>
+            </Stack>
+          ) : (
+            <Stack direction="row" spacing={2}>
+              <Button
+                onClick={() => navigate("/login")}
+                sx={{ fontWeight: 700, color: "#0f172a" }}
+              >
+                Login
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => navigate("/signup")}
+                sx={{
+                  borderRadius: 2.5,
+                  px: 3,
+                  fontWeight: 700,
+                  background:
+                    "linear-gradient(135deg, #0f172a 0%, #1db5c7 100%)",
+                }}
+              >
+                Join Free
+              </Button>
+            </Stack>
           )}
-
-          {/* LOGIN / LOGOUT */}
-          <Button
-            variant="contained"
-            onClick={() => handleButton(token ? "logout" : "login")}
-            sx={{
-              textTransform: "none",
-              borderRadius: 2,
-              px: 3,
-              background: "linear-gradient(90deg, #6366f1, #06b6d4)",
-              boxShadow: "0 4px 12px rgba(99,102,241,0.3)",
-              "&:hover": {
-                background: "linear-gradient(90deg, #4f46e5, #0891b2)",
-              },
-            }}
-          >
-            {token ? "Logout" : "Login"}
-          </Button>
         </Box>
       </Toolbar>
     </AppBar>
@@ -157,4 +156,3 @@ function Header() {
 }
 
 export default Header;
-

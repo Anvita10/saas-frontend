@@ -10,6 +10,7 @@ import {
   Stack,
   InputAdornment,
   IconButton,
+  Fade,
 } from "@mui/material";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -22,11 +23,12 @@ function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState({ email: "", password: "", creds: "" });
   const [showPassword, setShowPassword] = useState(false);
-  
+  const [isLoading, setIsLoading] = useState(false);
+
   const { login } = useContext(AuthContext);
   const apiClient = useApiClient();
-  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
   const navigate = useNavigate();
+  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
   function handleFormChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -34,171 +36,239 @@ function LoginPage() {
   }
 
   const handleClick = async () => {
-    if (!form.email) {
-      setError({ ...error, email: "Email is required" });
+    if (!form.email || !emailRegex.test(form.email)) {
+      setError({ ...error, email: "Please enter a valid email" });
       return;
-    } else if (!form.password) {
+    }
+    if (!form.password) {
       setError({ ...error, password: "Password is required" });
       return;
-    } else if (!emailRegex.test(form.email)) {
-      setError({ ...error, email: "Email is Invalid" });
-      return;
-    } else {
-      try {
-        const res = await apiClient("/login", {
-          method: "POST",
-          body: { email: form.email, password: form.password },
-        });
+    }
 
-        if (!res?.token) {
-          setError((prev) => ({ ...prev, email: "Login failed" }));
-          return;
-        }
-        login(res.token);
-        navigate("/");
-      } catch (err) {
-        setError((prev) => ({ ...prev, creds: err.message || "Login failed" }));
+    try {
+      setIsLoading(true);
+      const res = await apiClient("/login", {
+        method: "POST",
+        body: { email: form.email, password: form.password },
+      });
+
+      if (!res?.data.token) {
+        setError((prev) => ({ ...prev, creds: "Login failed" }));
+        return;
       }
+      login(res.data.token, res.data.username);
+      navigate("/dashboard");
+    } catch (err) {
+      setError((prev) => ({
+        ...prev,
+        creds: err.message || "Invalid credentials",
+      }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100vh"
       sx={{
-        backgroundColor: "#f8fafc",
-        backgroundImage: `radial-gradient(at 0% 0%, hsla(215,100%,98%,1) 0, transparent 50%), 
-                          radial-gradient(at 100% 0%, hsla(220,100%,97%,1) 0, transparent 50%)`,
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #0f172a 0%, #1db5c7 100%)",
+        p: 2,
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <Paper
-        elevation={3}
+      {/* Brand-Consistent Glows */}
+      <Box
         sx={{
-          p: 5,
-          width: 400,
-          borderRadius: 3,
-          border: "1px solid",
-          borderColor: "divider",
-          boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+          position: "absolute",
+          top: "10%",
+          right: "5%",
+          width: 350,
+          height: 350,
+          bgcolor: "rgba(255,255,255,0.04)",
+          filter: "blur(90px)",
+          borderRadius: "50%",
         }}
-      >
-        <Stack spacing={1} alignItems="center" mb={4}>
-          <Typography
-            variant="h4"
-            fontWeight="700"
-            sx={{ color: "text.primary", letterSpacing: "-0.5px" }}
-          >
-            Welcome Back
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Please enter your details to sign in
-          </Typography>
-        </Stack>
+      />
 
-        {error.creds && (
-          <Alert
-            severity="error"
-            variant="outlined"
-            sx={{ mb: 3, borderRadius: 2, fontWeight: 500 }}
-          >
-            {error.creds}
-          </Alert>
-        )}
-
-        <Stack spacing={2.5}>
-          <TextField
-            fullWidth
-            label="Email Address"
-            name="email"
-            placeholder="name@company.com"
-            value={form.email}
-            onChange={handleFormChange}
-            error={Boolean(error.email)}
-            helperText={error.email}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <MailOutlineIcon fontSize="small" color="action" />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
-          />
-
-          <TextField
-            fullWidth
-            type={showPassword ? "text" : "password"}
-            label="Password"
-            name="password"
-            placeholder="••••••••"
-            value={form.password}
-            onChange={handleFormChange}
-            error={Boolean(error.password)}
-            helperText={error.password}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlinedIcon fontSize="small" color="action" />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                    size="small"
-                  >
-                    {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
-          />
-
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            onClick={handleClick}
-            sx={{
-              mt: 1,
-              py: 1.5,
-              textTransform: "none",
-              borderRadius: 2.5,
-              fontWeight: 700,
-              fontSize: "1rem",
-              boxShadow: "0 4px 12px rgba(37, 99, 235, 0.2)",
-              background: "linear-gradient(45deg, #2563eb 30%, #3b82f6 90%)",
-              "&:hover": {
-                background: "linear-gradient(45deg, #1d4ed8 30%, #2563eb 90%)",
-                boxShadow: "0 6px 16px rgba(37, 99, 235, 0.3)",
-              },
-            }}
-          >
-            Sign In
-          </Button>
-
-          <Typography variant="body2" color="text.secondary" textAlign="center" pt={1}>
-            Don't have an account?{" "}
-            <Box
-              component="span"
+      <Fade in={true} timeout={800}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 4, md: 6 },
+            width: "100%",
+            maxWidth: 450,
+            borderRadius: 8,
+            bgcolor: "rgba(255, 255, 255, 0.96)",
+            backdropFilter: "blur(12px)",
+            boxShadow: "0 30px 60px -12px rgba(0, 0, 0, 0.45)",
+            zIndex: 1,
+          }}
+        >
+          {/* Header Typography Section */}
+          <Stack spacing={0.5} alignItems="center" mb={5}>
+            <Typography
+              variant="overline"
               sx={{
-                color: "primary.main",
-                fontWeight: 600,
-                cursor: "pointer",
-                "&:hover": { textDecoration: "underline" },
+                color: "#1db5c7",
+                fontWeight: 800,
+                letterSpacing: "0.2em",
+                lineHeight: 1,
+                mb: 1,
               }}
-              onClick={() => navigate("/signup")}
             >
-              Create one
-            </Box>
-          </Typography>
-        </Stack>
-      </Paper>
+              TASKLY FLOW
+            </Typography>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 900,
+                color: "#0f172a",
+                letterSpacing: "-0.04em",
+                textAlign: "center",
+              }}
+            >
+              Welcome back
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{ color: "text.secondary", fontWeight: 400, mt: 0.5 }}
+            >
+              Log in to continue your progress
+            </Typography>
+          </Stack>
+
+          {error.creds && (
+            <Alert
+              severity="error"
+              variant="filled"
+              sx={{ mb: 3, borderRadius: 3, fontWeight: 600 }}
+            >
+              {error.creds}
+            </Alert>
+          )}
+
+          <Stack spacing={2.5}>
+            <TextField
+              fullWidth
+              label="Email Address"
+              name="email"
+              value={form.email}
+              onChange={handleFormChange}
+              error={Boolean(error.email)}
+              helperText={error.email}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <MailOutlineIcon
+                      sx={{ color: "text.secondary", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 3,
+                  bgcolor: "#fcfdfe",
+                  "&:hover": { bgcolor: "#f1f5f9" },
+                },
+              }}
+            />
+
+            <TextField
+              fullWidth
+              label="Password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              onChange={handleFormChange}
+              error={Boolean(error.password)}
+              helperText={error.password}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockOutlinedIcon
+                      sx={{ color: "text.secondary", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 3,
+                  bgcolor: "#fcfdfe",
+                  "&:hover": { bgcolor: "#f1f5f9" },
+                },
+              }}
+            />
+
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
+              disabled={isLoading}
+              onClick={handleClick}
+              sx={{
+                mt: 1,
+                py: 2,
+                borderRadius: 3,
+                fontWeight: 800,
+                textTransform: "none",
+                fontSize: "1.05rem",
+                letterSpacing: "0.02em",
+                background: "linear-gradient(135deg, #0f172a 0%, #1db5c7 100%)",
+                boxShadow: "0 12px 20px -5px rgba(29, 181, 199, 0.4)",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  filter: "brightness(1.1)",
+                },
+              }}
+            >
+              {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+
+            <Typography
+              variant="body2"
+              textAlign="center"
+              sx={{ color: "text.secondary", fontWeight: 500 }}
+            >
+              New here?{" "}
+              <Box
+                component="span"
+                onClick={() => navigate("/signup")}
+                sx={{
+                  color: "#1db5c7",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                  ml: 0.5,
+                  "&:hover": { textDecoration: "underline" },
+                }}
+              >
+                Create a free account
+              </Box>
+            </Typography>
+          </Stack>
+        </Paper>
+      </Fade>
     </Box>
   );
 }
