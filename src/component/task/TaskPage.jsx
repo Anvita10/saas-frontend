@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -7,8 +7,6 @@ import {
   Container,
   Fade,
   Chip,
-  useTheme,
-  Divider,
   Button,
   Dialog,
   DialogContent,
@@ -36,33 +34,36 @@ function TaskPage() {
   const { workspaceId } = useParams();
   const apiClient = useApiClient();
 
-  const fetchTask = async (queryString = "") => {
-    try {
-      const url = queryString
-        ? `/workspaces/${workspaceId}/tasks?${queryString}`
-        : `/workspaces/${workspaceId}/tasks`;
+  const fetchTask = useCallback(
+    async (queryString = "") => {
+      try {
+        const url = queryString
+          ? `/workspaces/${workspaceId}/tasks?${queryString}`
+          : `/workspaces/${workspaceId}/tasks`;
 
-      const res = await apiClient(url);
-      if (res.data) setTask(res.data);
-      setIsFiltered(!!queryString);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+        const res = await apiClient(url);
+        if (res.data) setTask(res.data);
+        setIsFiltered(!!queryString);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    [apiClient, workspaceId],
+  );
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const res = await apiClient(`/workspaces/${workspaceId}/members`);
       if (res.data) SetMembers(res.data);
     } catch (err) {
       console.log(err);
     }
-  };
+  }, [apiClient, workspaceId]);
 
   useEffect(() => {
     fetchUsers();
     fetchTask();
-  }, [workspaceId]);
+  }, [fetchUsers, fetchTask]);
 
   const handleAddTask = async (payload) => {
     try {
