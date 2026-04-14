@@ -11,7 +11,7 @@ import {
   Divider,
   IconButton,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useApiClient from "../../hooks/useApiClient";
 import { useNavigate, useParams } from "react-router-dom";
 import WorkspacesIcon from "@mui/icons-material/Workspaces";
@@ -32,7 +32,7 @@ const WorkspaceDetail = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchWorkspaceDetail = async () => {
+  const fetchWorkspaceDetail = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiClient(`/workspaces/${workspaceId}`);
@@ -42,14 +42,14 @@ const WorkspaceDetail = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiClient, workspaceId]);
 
   useEffect(() => {
     const init = async () => {
       await fetchWorkspaceDetail();
     };
     init();
-  }, []);
+  }, [fetchWorkspaceDetail]);
 
   if (loading && !data) {
     return (
