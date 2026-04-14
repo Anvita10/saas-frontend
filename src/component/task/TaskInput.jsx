@@ -4,18 +4,15 @@ import {
   Stack,
   MenuItem,
   InputAdornment,
-  Typography,
   Box,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { useState } from "react";
-// Icons for a premium feel
 import TitleIcon from "@mui/icons-material/Title";
-import DescriptionIcon from "@mui/icons-material/Description";
 import PersonIcon from "@mui/icons-material/Person";
 import FlagIcon from "@mui/icons-material/Flag";
 
-export default function TaskInput({ categoryList, userList, onAddTask }) {
+export default function TaskInput({ userList, onAddTask }) {
   const [form, setForm] = useState({
     title: "",
     description: "",
