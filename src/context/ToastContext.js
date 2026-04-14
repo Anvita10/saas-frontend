@@ -1,11 +1,10 @@
-import { Box, Snackbar, useTheme } from "@mui/material";
+import { Box, Snackbar } from "@mui/material";
 import { useContext, useState } from "react";
 import { createContext } from "react";
 
 export const ToastContext = createContext();
 
 export function ToastProvider({ children }) {
-  const theme = useTheme();
   const [toast, setToast] = useState({
     open: false,
     message: "",
@@ -85,3 +84,4 @@ export function ToastProvider({ children }) {
 }
 
 export const useToast = () => useContext(ToastContext);
+
