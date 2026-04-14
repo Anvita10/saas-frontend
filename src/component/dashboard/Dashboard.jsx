@@ -10,7 +10,7 @@ import {
   Avatar,
   Stack,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import useApiClient from "../../hooks/useApiClient";
 import { useNavigate } from "react-router-dom";
@@ -28,7 +28,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const apiClient = useApiClient();
 
-  const getMyWorkspace = async () => {
+  const getMyWorkspace = useCallback(async () => {
     try {
       const res = await apiClient("/workspaces");
       if (res.success) {
@@ -37,7 +37,7 @@ function Dashboard() {
     } catch (err) {
       console.error("Failed to fetch workspaces:", err);
     }
-  };
+  }, [apiClient]);
 
   useEffect(() => {
     const init = async () => {
@@ -45,7 +45,7 @@ function Dashboard() {
     };
 
     init();
-  }, []);
+  }, [getMyWorkspace]);
 
   const hasWorkspaces = workspace.length > 0;
 
@@ -169,3 +169,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
