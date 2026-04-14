@@ -1,7 +1,6 @@
 import {
   Paper,
   Typography,
-  Avatar,
   Stack,
   Box,
   Divider,
@@ -84,3 +83,4 @@ function WorkspaceCard({ ws, onClick }) {
 }
 
 export default WorkspaceCard;
+
