@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useApiClient from "../../hooks/useApiClient";
 import AddMemberModal from "./AddMemberModal";
 
@@ -19,14 +19,14 @@ function MembersSection({ workspaceId }) {
   const [workspace, setWorkspace] = useState(null);
   const [open, setOpen] = useState(false);
 
-  const fetchWorkspace = async () => {
+  const fetchWorkspace = useCallback(async () => {
     const res = await apiClient(`/workspaces/${workspaceId}`);
     setWorkspace(res.data.workspace);
-  };
+  }, [apiClient, workspaceId]);
 
   useEffect(() => {
     fetchWorkspace();
-  }, [workspaceId]);
+  }, [fetchWorkspace]);
 
   const handleRemove = async (userId) => {
     if (!window.confirm("Remove this member?")) return;
@@ -162,3 +162,4 @@ function MembersSection({ workspaceId }) {
 }
 
 export default MembersSection;
+
