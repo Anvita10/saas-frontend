@@ -1,5 +1,4 @@
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import { useState } from "react";
 import {
   Drawer,
   List,
@@ -7,27 +6,20 @@ import {
   ListItemText,
   Box,
   Typography,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
   ListItemIcon,
   Avatar,
   useTheme,
 } from "@mui/material";
-import CreateWorkspace from "../workspace/CreateWorkspace";
 import { useAuth } from "../../context/AuthContext";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import SettingsIcon from "@mui/icons-material/Settings";
-import AddIcon from "@mui/icons-material/Add";
 
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [open, setOpen] = useState(false);
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const { workspaceId } = useParams();
   const theme = useTheme();
 
@@ -176,33 +168,6 @@ function Sidebar() {
             })}
         </List>
 
-        {/* ➕ ACTION SECTION */}
-        <Box sx={{ mt: 2, px: 1 }}>
-          <Button
-            fullWidth
-            startIcon={<AddIcon />}
-            onClick={() => setOpen(true)}
-            sx={{
-              justifyContent: "flex-start",
-              textTransform: "none",
-              borderRadius: 2,
-              color: "rgba(255,255,255,0.7)",
-              fontSize: "0.85rem",
-              fontWeight: 600,
-              py: 1,
-              border: "1px dashed rgba(148, 163, 184, 0.3)",
-              "&:hover": {
-                border: "1px dashed #22d3ee",
-                color: "#22d3ee",
-                bgcolor: "transparent",
-              },
-            }}
-            disabled={!token}
-          >
-            New Workspace
-          </Button>
-        </Box>
-
         {/* 👇 USER FOOTER */}
         <Box
           sx={{
@@ -242,28 +207,9 @@ function Sidebar() {
           </Box>
         </Box>
       </Drawer>
-
-      {/* CREATE WORKSPACE MODAL */}
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        fullWidth
-        maxWidth="xs"
-        PaperProps={{
-          sx: { borderRadius: 3, p: 1 },
-        }}
-      >
-        <DialogTitle
-          sx={{ fontWeight: 800, textAlign: "center", color: "#0f172a" }}
-        >
-          Launch New Workspace
-        </DialogTitle>
-        <DialogContent>
-          <CreateWorkspace onClose={() => setOpen(false)} />
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
 
 export default Sidebar;
+
