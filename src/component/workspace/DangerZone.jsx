@@ -15,20 +15,23 @@ import useApiClient from "../../hooks/useApiClient";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
 import CloseIcon from "@mui/icons-material/Close";
+import { useToast } from "../../context/ToastContext";
 
 function DangerZone({ workspaceId }) {
   const apiClient = useApiClient();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   const handleDelete = async () => {
     setLoading(true);
     try {
       await apiClient(`/workspaces/${workspaceId}`, { method: "DELETE" });
+      showToast("Deleted successfully", "success");
       navigate("/dashboard");
     } catch (err) {
-      console.error(err);
+      showToast(err.message, "error");
       setLoading(false);
     }
   };
@@ -58,14 +61,12 @@ function DangerZone({ workspaceId }) {
 
         <Button
           // REMOVE: color="error" (This is likely what's forcing the teal/theme color)
-          variant="contained"
           disableElevation
           onClick={() => setOpen(true)}
           sx={{
-            // USE RAW CSS PROPERTIES TO OVERRIDE THEME
-            background: "#dc2626 !important",
-            backgroundColor: "#dc2626 !important",
-            color: "#ffffff !important",
+            background: "#dc2626 ",
+            backgroundColor: "#dc2626",
+            color: "#ffffff",
 
             // TYPOGRAPHY & SHAPE
             fontWeight: 800,
@@ -77,14 +78,14 @@ function DangerZone({ workspaceId }) {
 
             // HOVER FIX
             "&:hover": {
-              background: "#b91c1c !important",
-              backgroundColor: "#b91c1c !important",
+              background: "#b91c1c",
+              backgroundColor: "#b91c1c ",
               boxShadow: "0 8px 16px rgba(220, 38, 38, 0.25)",
             },
 
             // ACTIVE/FOCUS STATE
             "&:active": {
-              background: "#991b1b !important",
+              background: "#991b1b",
             },
           }}
         >

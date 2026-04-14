@@ -8,14 +8,13 @@ import {
   Stack,
   Tooltip,
 } from "@mui/material";
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import LogoutIcon from "@mui/icons-material/Logout";
 
 function Header() {
   const navigate = useNavigate();
-  const { token, user } = useContext(AuthContext);
+  const { token, user } = useAuth();
 
   return (
     <AppBar
@@ -88,7 +87,7 @@ function Header() {
                     sx={{
                       width: 38,
                       height: 38,
-                      bgcolor: "#0f172a",
+                      bgcolor: "#3454a0",
                       border: "2px solid #1db5c7",
                       fontSize: 14,
                       fontWeight: 800,

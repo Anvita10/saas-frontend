@@ -11,20 +11,26 @@ import {
   Divider,
   IconButton,
 } from "@mui/material";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import useApiClient from "../../hooks/useApiClient";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import WorkspacesIcon from "@mui/icons-material/Workspaces";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import GroupIcon from "@mui/icons-material/Group";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import {
+  CARD_HOVER,
+  CARD_STYLES,
+  getPriorityColor,
+  getStatusConfig,
+} from "../../theme/commonStyle";
 
 const WorkspaceDetail = () => {
   const apiClient = useApiClient();
   const { workspaceId } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchWorkspaceDetail = async () => {
     try {
@@ -44,31 +50,6 @@ const WorkspaceDetail = () => {
     };
     init();
   }, []);
-
-  const getStatusStyles = (status) => {
-    const s = status?.toLowerCase();
-    switch (s) {
-      case "completed":
-        return { color: "#10b981", bg: "#ecfdf5" };
-      case "in-progress":
-        return { color: "#3b82f6", bg: "#eff6ff" };
-      case "pending":
-        return { color: "#f59e0b", bg: "#fffbeb" };
-      case "todo":
-        return { color: "#64748b", bg: "#f8fafc" };
-      case "rejected":
-        return { color: "#ef4444", bg: "#fef2f2" };
-      default:
-        return { color: "#64748b", bg: "#f1f5f9" };
-    }
-  };
-
-  const getPriorityColor = (priority) => {
-    const p = priority?.toLowerCase();
-    if (p === "high") return "#ef4444";
-    if (p === "medium") return "#f59e0b";
-    return "#10b981";
-  };
 
   if (loading && !data) {
     return (
@@ -140,7 +121,10 @@ const WorkspaceDetail = () => {
                 </Typography>
               </Box>
             </Stack>
-            <IconButton sx={{ border: "1px solid #e2e8f0" }}>
+            <IconButton
+              sx={{ border: "1px solid #e2e8f0" }}
+              onClick={() => navigate(`/workspace/${workspaceId}/setting`)}
+            >
               <MoreVertIcon />
             </IconButton>
           </Stack>
@@ -197,14 +181,12 @@ const WorkspaceDetail = () => {
 
       <Container maxWidth="xl">
         <Grid container spacing={3}>
-          {/* 2. RECENT TASKS (Main Content) */}
           <Grid item xs={12} md={8}>
             <Paper
               variant="outlined"
               sx={{
-                borderRadius: 3,
-                border: "1px solid #e2e8f0",
-                bgcolor: "#fff",
+                ...CARD_STYLES,
+                ...CARD_HOVER,
                 overflow: "hidden",
               }}
             >
@@ -228,7 +210,7 @@ const WorkspaceDetail = () => {
               <Box>
                 {recentTasks.length > 0 ? (
                   recentTasks.map((task, idx) => {
-                    const statusStyles = getStatusStyles(task.status);
+                    const statusStyles = getStatusConfig(task.status);
                     return (
                       <Box
                         key={idx}
@@ -244,44 +226,59 @@ const WorkspaceDetail = () => {
                           "&:hover": { bgcolor: "#f8fafc" },
                         }}
                       >
+                        {/* Priority Bar */}
                         <Box
                           sx={{
                             width: 4,
                             height: 40,
                             bgcolor: getPriorityColor(task.priority),
                             borderRadius: 4,
-                            mr: 2.5,
+                            mr: 2,
+                            flexShrink: 0,
                           }}
                         />
 
-                        <Box sx={{ flex: 1 }}>
+                        {/* Content */}
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Typography
                             variant="body2"
                             fontWeight="700"
                             color="#334155"
-                            sx={{ mb: 0.5 }}
+                            noWrap
                           >
                             {task.title}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Due: {new Date(task.dueDate).toLocaleDateString()}
+
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "#64748b", fontWeight: 500 }}
+                          >
+                            Due • {new Date(task.dueDate).toLocaleDateString()}
                           </Typography>
                         </Box>
 
-                        <Stack direction="row" spacing={3} alignItems="center">
+                        {/* Right Section */}
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          spacing={1.5}
+                          sx={{
+                            ml: 2,
+                            flexShrink: 0,
+                          }}
+                        >
                           <Chip
                             label={task.status}
                             size="small"
                             sx={{
-                              fontWeight: 800,
-                              fontSize: "0.65rem",
-                              borderRadius: 1.5,
+                              fontWeight: 700,
+                              fontSize: "0.75rem",
+                              height: 24,
+                              borderRadius: 1,
                               color: statusStyles.color,
                               bgcolor: statusStyles.bg,
+                              border: `1px solid ${statusStyles.color}30`, // 🔥 makes it visible
                             }}
-                          />
-                          <ArrowForwardIosIcon
-                            sx={{ fontSize: 14, color: "#cbd5e1" }}
                           />
                         </Stack>
                       </Box>
@@ -375,52 +372,6 @@ const WorkspaceDetail = () => {
                       )}
                     </Box>
                   ))}
-                </Box>
-              </Paper>
-
-              {/* INFO BOX: Workspace Health */}
-              <Paper
-                variant="outlined"
-                sx={{
-                  p: 3,
-                  borderRadius: 3,
-                  border: "1px solid #e2e8f0",
-                  bgcolor: "#1e293b",
-                  color: "#fff",
-                }}
-              >
-                <Typography
-                  variant="subtitle2"
-                  fontWeight="700"
-                  sx={{ mb: 1, color: "primary.light" }}
-                >
-                  Workspace Status
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ opacity: 0.8, fontSize: "0.85rem", mb: 2 }}
-                >
-                  Your team has completed{" "}
-                  <b>{formatedStats.Completed || 0} tasks</b> so far. Keep an
-                  eye on the <b>{formatedStats.Rejected || 0} rejected</b>{" "}
-                  items.
-                </Typography>
-                <Box
-                  sx={{
-                    height: 6,
-                    width: "100%",
-                    bgcolor: "rgba(255,255,255,0.1)",
-                    borderRadius: 1,
-                    overflow: "hidden",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      height: "100%",
-                      width: `${(formatedStats.Completed / formatedStats.total) * 100 || 0}%`,
-                      bgcolor: "primary.main",
-                    }}
-                  />
                 </Box>
               </Paper>
             </Stack>

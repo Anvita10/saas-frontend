@@ -194,16 +194,6 @@ export default function TaskInput({ categoryList, userList, onAddTask }) {
         variant="contained"
         onClick={handleClick}
         disabled={!form.title.trim() || !form.description.trim()}
-        sx={{
-          borderRadius: 2,
-          textTransform: "none",
-          py: 1.2,
-          fontWeight: 700,
-          boxShadow: "0 4px 12px rgba(37, 99, 235, 0.2)",
-          "&:hover": {
-            boxShadow: "0 6px 16px rgba(37, 99, 235, 0.3)",
-          },
-        }}
       >
         Create Task
       </Button>

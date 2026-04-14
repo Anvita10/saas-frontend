@@ -64,16 +64,6 @@ function MembersSection({ workspaceId }) {
           disableElevation
           startIcon={<PersonAddAlt1Icon />}
           onClick={() => setOpen(true)}
-          sx={{
-            textTransform: "none",
-            borderRadius: "10px",
-            fontWeight: 700,
-            fontSize: "0.95rem",
-            px: 3,
-            py: 1,
-            bgcolor: "#0ea5e9",
-            "&:hover": { bgcolor: "#0284c7" },
-          }}
         >
           Add Member
         </Button>

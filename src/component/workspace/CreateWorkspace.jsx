@@ -8,8 +8,6 @@ import {
   Box,
   IconButton,
   InputAdornment,
-  Snackbar,
-  Alert,
   Avatar,
   List,
   ListItem,
@@ -22,6 +20,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import GroupIcon from "@mui/icons-material/Group";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import useApiClient from "../../hooks/useApiClient";
+import { useToast } from "../../context/ToastContext";
 
 const CreateWorkspace = ({ onClose, getMyWorkspace }) => {
   const roles = ["ADMIN", "MEMBER"];
@@ -31,22 +30,9 @@ const CreateWorkspace = ({ onClose, getMyWorkspace }) => {
   const [error, setError] = useState("");
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const { showToast } = useToast();
 
   const apiClient = useApiClient();
-
-  // Dynamic Button Label Logic
-  const getButtonLabel = () => {
-    if (loading) return ""; // Handled by CircularProgress
-    if (!wsName.trim()) return "Enter Workspace Name";
-    if (members.length === 0) return "Add At Least One Member";
-    return "Launch Workspace";
-  };
 
   const isButtonDisabled = !wsName.trim() || members.length === 0 || loading;
 
@@ -71,22 +57,14 @@ const CreateWorkspace = ({ onClose, getMyWorkspace }) => {
       });
 
       if (res.success) {
-        setSnackbar({
-          open: true,
-          message: "Workspace created! 🎉",
-          severity: "success",
-        });
+        showToast(res.message, "success");
         getMyWorkspace();
         setTimeout(() => {
           if (onClose) onClose();
         }, 1500);
       }
     } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err.message,
-        severity: "error",
-      });
+      showToast(err.message, "error");
     } finally {
       setLoading(false);
     }
@@ -212,22 +190,13 @@ const CreateWorkspace = ({ onClose, getMyWorkspace }) => {
                 variant="contained"
                 onClick={handleAddMember}
                 disabled={!email}
+                startIcon={<AddCircleOutlineIcon />}
                 sx={{
-                  bgcolor: "#0f172a",
-                  borderRadius: 2,
-                  minWidth: 54,
-                  height: 48,
-                  boxShadow: "none",
-                  "&.Mui-disabled": {
-                    bgcolor: "#f1f5f9",
-                    color: "#94a3b8",
-                    cursor: "not-allowed",
-                    pointerEvents: "auto",
-                  },
-                  "&:hover": { bgcolor: "#1db5c7" },
+                  minWidth: 110,
+                  fontWeight: 700,
                 }}
               >
-                <AddCircleOutlineIcon fontSize="small" />
+                Add
               </Button>
             </Stack>
             {error && (
@@ -246,9 +215,9 @@ const CreateWorkspace = ({ onClose, getMyWorkspace }) => {
             sx={{
               maxHeight: 180,
               overflowY: "auto",
-              bgcolor: "#f8fafc",
+              bgcolor: "transparent",
+              border: "none",
               borderRadius: 2,
-              border: "1px dashed #e2e8f0",
               p: members.length > 0 ? 1 : 3,
             }}
           >
@@ -304,65 +273,56 @@ const CreateWorkspace = ({ onClose, getMyWorkspace }) => {
                 ))}
               </List>
             ) : (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                textAlign="center"
-              >
-                Add team members to continue
-              </Typography>
+              <Box textAlign="center">
+                <Typography
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: "0.9rem",
+                    color: "#0f172a",
+                  }}
+                >
+                  No team members yet
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "#64748b",
+                    mt: 0.5,
+                  }}
+                >
+                  Add teammates to collaborate in your workspace
+                </Typography>
+              </Box>
             )}
           </Box>
 
-          {/* FINAL SUBMIT BUTTON - DYNAMIC LABELS */}
           <Button
             type="submit"
             variant="contained"
             fullWidth
             disabled={isButtonDisabled}
             sx={{
-              bgcolor: "#1db5c7",
-              color: "#fff",
+              color: "#fff", // ✅ FORCE WHITE TEXT
               borderRadius: 2.5,
               textTransform: "none",
               fontWeight: 800,
               py: 2,
               fontSize: "1rem",
-              boxShadow: "0 10px 15px -3px rgba(29, 181, 199, 0.2)",
-              transition: "all 0.2s",
-              "&.Mui-disabled": {
-                bgcolor: "#e2e8f0 !important",
-                color: "#64748b !important",
-                cursor: "not-allowed",
-                pointerEvents: "auto",
-                opacity: 0.8,
+              boxShadow: "0 10px 20px rgba(29, 181, 199, 0.25)",
+              "&:hover": {
+                transform: "translateY(-1px)",
               },
-              "&:hover": { bgcolor: "#0f172a", transform: "translateY(-1px)" },
             }}
           >
             {loading ? (
               <CircularProgress size={24} sx={{ color: "#94a3b8" }} />
             ) : (
-              getButtonLabel()
+              "Launch Workspace"
             )}
           </Button>
         </Stack>
       </form>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar((p) => ({ ...p, open: false }))}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      >
-        <Alert
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ borderRadius: 2 }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };

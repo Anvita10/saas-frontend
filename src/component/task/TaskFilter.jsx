@@ -1,17 +1,11 @@
-import {
-  TextField,
-  MenuItem,
-  Button,
-  Stack,
-  Box,
-  Typography,
-} from "@mui/material";
+import { TextField, MenuItem, Button, Stack, Box } from "@mui/material";
 import { useState } from "react";
 import { DatePicker } from "@mui/x-date-pickers";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { PRIORITY_LIST, STATUS_LIST } from "../../constants/Constants";
 
-export default function TaskFilter({ fetchTask, status, members }) {
+export default function TaskFilter({ fetchTask, members }) {
   const [filters, setFilters] = useState({
     status: "",
     priority: "",
@@ -19,9 +13,6 @@ export default function TaskFilter({ fetchTask, status, members }) {
     dueDate: null,
   });
 
-  const priorityList = ["Low", "Medium", "High"];
-
-  // THE FIX: Standardized dimensions for ALL field types
   const fieldStyle = {
     flex: "1 1 200px", // Allows them to grow equally but stay at least 200px
     minWidth: "150px",
@@ -77,7 +68,7 @@ export default function TaskFilter({ fetchTask, status, members }) {
           <MenuItem value="">
             <em>All</em>
           </MenuItem>
-          {status.map((opt) => (
+          {STATUS_LIST.map((opt) => (
             <MenuItem key={opt} value={opt}>
               {opt}
             </MenuItem>
@@ -92,10 +83,7 @@ export default function TaskFilter({ fetchTask, status, members }) {
           sx={fieldStyle}
           InputLabelProps={{ shrink: true }}
         >
-          <MenuItem value="">
-            <em>Any</em>
-          </MenuItem>
-          {priorityList.map((opt) => (
+          {PRIORITY_LIST.map((opt) => (
             <MenuItem key={opt} value={opt}>
               {opt}
             </MenuItem>
@@ -157,16 +145,6 @@ export default function TaskFilter({ fetchTask, status, members }) {
           onClick={applyFilters}
           variant="contained"
           startIcon={<FilterListIcon />}
-          sx={{
-            textTransform: "none",
-            fontWeight: 800,
-            borderRadius: "12px",
-            px: 4,
-            height: "44px",
-            background: "linear-gradient(90deg, #134e4a 0%, #0891b2 100%)", // MATCHES YOUR TEAL
-            boxShadow: "0 4px 10px rgba(8, 145, 178, 0.2)",
-            "&:hover": { opacity: 0.9 },
-          }}
         >
           Apply Filters
         </Button>

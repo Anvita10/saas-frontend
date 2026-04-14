@@ -8,21 +8,21 @@ import {
   MenuItem,
   IconButton,
   Box,
-  Typography,
 } from "@mui/material";
 import { useState } from "react";
 import useApiClient from "../../hooks/useApiClient";
 import { useParams } from "react-router-dom";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import { useToast } from "../../context/ToastContext";
 
 export default function AddMemberModal({ open, onClose, onSuccess }) {
   const apiClient = useApiClient();
   const { workspaceId } = useParams();
+  const { showToast } = useToast();
 
   const [members, setMembers] = useState([{ email: "", role: "member" }]);
 
-  // ➕ Add new row
   const addRow = () => {
     setMembers((prev) => [...prev, { email: "", role: "member" }]);
   };
@@ -52,12 +52,13 @@ export default function AddMemberModal({ open, onClose, onSuccess }) {
       });
 
       if (res.success) {
+        showToast(res.message, "success");
         onSuccess();
         onClose();
         setMembers([{ email: "", role: "member" }]);
       }
     } catch (err) {
-      console.log(err);
+      showToast(err.message, "error");
     }
   };
 
@@ -115,15 +116,7 @@ export default function AddMemberModal({ open, onClose, onSuccess }) {
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button onClick={onClose}>Cancel</Button>
 
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              sx={{
-                textTransform: "none",
-                borderRadius: 2,
-                background: "linear-gradient(90deg, #6366f1, #06b6d4)",
-              }}
-            >
+            <Button variant="contained" onClick={handleSubmit}>
               Add Members
             </Button>
           </Stack>

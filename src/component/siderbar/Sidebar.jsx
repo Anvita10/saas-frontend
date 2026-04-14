@@ -1,5 +1,5 @@
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import {
   Drawer,
   List,
@@ -8,17 +8,15 @@ import {
   Box,
   Typography,
   Button,
-  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
   ListItemIcon,
   Avatar,
+  useTheme,
 } from "@mui/material";
 import CreateWorkspace from "../workspace/CreateWorkspace";
-import { AuthContext } from "../../context/AuthContext";
-
-// Icons for consistency
+import { useAuth } from "../../context/AuthContext";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -29,10 +27,10 @@ function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const { user, token } = useContext(AuthContext); // Accessing user for the footer
+  const { user, token } = useAuth();
   const { workspaceId } = useParams();
+  const theme = useTheme();
 
-  // Menu Items - Logic to handle when no workspace is selected
   const menuItems = [
     {
       id: 0,
@@ -76,7 +74,7 @@ function Sidebar() {
             width: 260,
             boxSizing: "border-box",
             border: "none",
-            background: "#0f172a", // Solid deep slate to match your theme
+            background: theme.tokens.gradients.hero,
             color: "#fff",
             padding: "24px 16px",
           },
@@ -90,9 +88,7 @@ function Sidebar() {
               fontWeight: 900,
               fontSize: "1.25rem",
               letterSpacing: "-0.02em",
-              background: "linear-gradient(90deg, #22d3ee, #1db5c7)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
+              color: "#22d3ee",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -100,7 +96,7 @@ function Sidebar() {
             }}
             onClick={() => navigate("/dashboard")}
           >
-            ⚡ TaskFlow
+            TaskFlow
           </Typography>
 
           {workspaceId && (
@@ -115,7 +111,11 @@ function Sidebar() {
             >
               <Typography
                 variant="caption"
-                sx={{ color: "#94a3b8", fontWeight: 700, letterSpacing: 1 }}
+                sx={{
+                  color: "rgba(255,255,255,0.6)",
+                  fontWeight: 700,
+                  letterSpacing: 1,
+                }}
               >
                 ACTIVE WORKSPACE
               </Typography>
@@ -148,7 +148,7 @@ function Sidebar() {
                     bgcolor: isActive
                       ? "rgba(29, 181, 199, 0.15)"
                       : "transparent",
-                    color: isActive ? "#22d3ee" : "#94a3b8",
+                    color: isActive ? "#22d3ee" : "rgba(255,255,255,0.75)",
                     "&:hover": {
                       bgcolor: "rgba(255, 255, 255, 0.05)",
                       color: "#fff",
@@ -186,7 +186,7 @@ function Sidebar() {
               justifyContent: "flex-start",
               textTransform: "none",
               borderRadius: 2,
-              color: "#94a3b8",
+              color: "rgba(255,255,255,0.7)",
               fontSize: "0.85rem",
               fontWeight: 600,
               py: 1,
@@ -235,7 +235,7 @@ function Sidebar() {
             </Typography>
             <Typography
               variant="caption"
-              sx={{ color: "#64748b", display: "block" }}
+              sx={{ color: "rgba(255,255,255,0.6)", display: "block" }}
             >
               Free Tier
             </Typography>

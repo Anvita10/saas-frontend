@@ -8,39 +8,47 @@ import {
   Stack,
   IconButton,
   Divider,
+  Chip,
 } from "@mui/material";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import useApiClient from "../../hooks/useApiClient";
-
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DoneIcon from "@mui/icons-material/Done";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { useToast } from "../../context/ToastContext";
+import { STATUS_LIST } from "../../constants/Constants";
+import {
+  CARD_STYLES,
+  CARD_HOVER,
+  getStatusConfig,
+  getPriorityColor,
+} from "../../theme/commonStyle";
 
-export default function TaskList({ task, fetchTask, status, members }) {
+const inputStyle = {
+  "& .MuiOutlinedInput-root": {
+    height: "52px",
+    borderRadius: "12px",
+    fontSize: "1rem",
+    bgcolor: "#fff",
+    "& fieldset": { borderColor: "#e2e8f0" },
+    "&:hover fieldset": { borderColor: "#cbd5e1" },
+    "&.Mui-focused fieldset": { borderColor: "#0e7490" },
+  },
+  "& .MuiInputLabel-root": {
+    fontSize: "0.85rem",
+    fontWeight: 800,
+    color: "#64748b",
+    textTransform: "uppercase",
+    letterSpacing: "0.025em",
+  },
+};
+
+export default function TaskList({ task, fetchTask, members }) {
   const [taskUpdates, setTaskUpdates] = useState({});
   const apiClient = useApiClient();
   const { workspaceId } = useParams();
-
-  // UPDATED: Larger, clearer input styles
-  const inputStyle = {
-    "& .MuiOutlinedInput-root": {
-      height: "52px", // Increased from 44px
-      borderRadius: "12px",
-      fontSize: "1rem", // Standard readable size
-      bgcolor: "#fff",
-      "& fieldset": { borderColor: "#e2e8f0" },
-      "&:hover fieldset": { borderColor: "#cbd5e1" },
-      "&.Mui-focused fieldset": { borderColor: "#0e7490" },
-    },
-    "& .MuiInputLabel-root": {
-      fontSize: "0.85rem", // Increased from 0.75rem
-      fontWeight: 800,
-      color: "#64748b",
-      textTransform: "uppercase",
-      letterSpacing: "0.025em",
-    },
-  };
+  const { showToast } = useToast();
 
   const handleChange = (id, field, value) => {
     setTaskUpdates((prev) => ({
@@ -50,19 +58,38 @@ export default function TaskList({ task, fetchTask, status, members }) {
   };
 
   const handleUpdateTask = async (id) => {
-    const payload = taskUpdates[id];
-    if (!payload) return;
-    const res = await apiClient(`/workspaces/${workspaceId}/tasks/${id}`, {
-      method: "PATCH",
-      body: payload,
-    });
-    if (res.success) {
-      fetchTask("");
-      setTaskUpdates((prev) => {
-        const copy = { ...prev };
-        delete copy[id];
-        return copy;
+    try {
+      const payload = taskUpdates[id];
+      if (!payload) return;
+      const res = await apiClient(`/workspaces/${workspaceId}/tasks/${id}`, {
+        method: "PATCH",
+        body: payload,
       });
+      if (res.success) {
+        showToast(res.message, "success");
+        fetchTask("");
+        setTaskUpdates((prev) => {
+          const copy = { ...prev };
+          delete copy[id];
+          return copy;
+        });
+      }
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  };
+
+  const deleteTask = async (id) => {
+    try {
+      const res = await apiClient(`/workspaces/${workspaceId}/tasks/${id}`, {
+        method: "DELETE",
+      });
+      if (res.success) {
+        showToast("Deleted successfully", "success");
+        fetchTask("");
+      }
+    } catch (err) {
+      showToast(err.message, "error");
     }
   };
 
@@ -70,85 +97,96 @@ export default function TaskList({ task, fetchTask, status, members }) {
     <Box
       sx={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))", // Slightly wider cards
-        gap: 4,
-        mt: 4,
+        gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))",
+        gap: 3,
+        mt: 3,
       }}
     >
       {task.map((val) => {
-        const hasChanges = !!taskUpdates[val._id];
+        const hasChanges =
+          taskUpdates[val._id] && Object.keys(taskUpdates[val._id]).length > 0;
+
+        const status = getStatusConfig(val.status);
+        const priorityColor = getPriorityColor(val.priority);
 
         return (
           <Paper
             key={val._id}
             elevation={0}
             sx={{
-              borderRadius: "24px",
-              border: "1px solid #e2e8f0",
-              height: "580px", // Increased height to accommodate larger fonts
+              ...CARD_STYLES,
+              ...CARD_HOVER,
               display: "flex",
               flexDirection: "column",
-              bgcolor: "#fff",
+              position: "relative",
               overflow: "hidden",
-              boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.05)",
             }}
           >
-            {/* 1. HEADER SECTION */}
-            <Box sx={{ p: 4, pb: 2 }}>
+            {/* STATUS STRIP */}
+            <Box
+              sx={{
+                position: "absolute",
+                left: 0,
+                top: 0,
+                width: 5,
+                height: "100%",
+                bgcolor: status.color,
+              }}
+            />
+
+            {/* HEADER */}
+            <Box sx={{ p: 3, pl: 4, pb: 1.5 }}>
               <Stack
                 direction="row"
                 justifyContent="space-between"
                 alignItems="center"
                 mb={2}
               >
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontWeight: 900,
-                    color: "#0ea5e9",
-                    letterSpacing: 1.5,
-                    fontSize: "0.8rem",
-                  }}
-                >
-                  {val.category?.toUpperCase() || "GENERAL TASK"}
-                </Typography>
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  alignItems="center"
-                  sx={{ color: "#94a3b8" }}
-                >
-                  <CalendarTodayIcon sx={{ fontSize: 16 }} />
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: 800,
+                      color: "#1e293b",
+                      fontSize: "1.25rem",
+                    }}
+                  >
+                    {val.title}
+                  </Typography>
+
+                  <CalendarTodayIcon sx={{ fontSize: 16, color: "#94a3b8" }} />
+
                   <Typography
                     variant="body2"
                     fontWeight={700}
-                    sx={{ fontSize: "0.85rem" }}
+                    sx={{ fontSize: "0.85rem", color: "#64748b" }}
                   >
                     {val.dueDate
                       ? new Date(val.dueDate).toLocaleDateString()
                       : "No Deadline"}
                   </Typography>
                 </Stack>
+
+                {/* PRIORITY */}
+                <Chip
+                  label={(val.priority || "low").toUpperCase()}
+                  size="small"
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.7rem",
+                    bgcolor: `${priorityColor}15`,
+                    color: priorityColor,
+                  }}
+                />
               </Stack>
 
-              {/* TITLE: Large and Bold */}
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 800,
-                  color: "#1e293b",
-                  mb: 2,
-                  fontSize: "1.25rem",
-                }}
-              >
-                {val.title}
-              </Typography>
-
-              {/* DESCRIPTION: Standard Body Size */}
-              <Box sx={{ height: "120px", overflowY: "auto", pr: 1 }}>
+              <Box sx={{ px: 1 }}>
                 <Typography
-                  variant="body1"
-                  sx={{ color: "#475569", lineHeight: 1.7, fontSize: "1rem" }}
+                  variant="body2"
+                  sx={{
+                    color: "#475569",
+                    lineHeight: 1.6,
+                  }}
                 >
                   {val.description || "No description provided for this task."}
                 </Typography>
@@ -157,8 +195,8 @@ export default function TaskList({ task, fetchTask, status, members }) {
 
             <Divider sx={{ mx: 4, borderColor: "#f1f5f9" }} />
 
-            {/* 2. PROPERTIES SECTION */}
-            <Box sx={{ p: 4, flexGrow: 1, bgcolor: "#fcfdfe" }}>
+            {/* UPDATE SECTION */}
+            <Box sx={{ p: 3, flexGrow: 1, bgcolor: status.bg }}>
               <Typography
                 variant="caption"
                 sx={{
@@ -185,8 +223,8 @@ export default function TaskList({ task, fetchTask, status, members }) {
                   sx={inputStyle}
                   InputLabelProps={{ shrink: true }}
                 >
-                  {status.map((s) => (
-                    <MenuItem key={s} value={s} sx={{ fontSize: "1rem" }}>
+                  {STATUS_LIST.map((s) => (
+                    <MenuItem key={s} value={s}>
                       {s}
                     </MenuItem>
                   ))}
@@ -207,11 +245,9 @@ export default function TaskList({ task, fetchTask, status, members }) {
                   sx={inputStyle}
                   InputLabelProps={{ shrink: true }}
                 >
-                  <MenuItem value="" sx={{ fontSize: "1rem" }}>
-                    Unassigned
-                  </MenuItem>
+                  <MenuItem value="">Unassigned</MenuItem>
                   {members.map((m) => (
-                    <MenuItem key={m.id} value={m.id} sx={{ fontSize: "1rem" }}>
+                    <MenuItem key={m.id} value={m.id}>
                       {m.name}
                     </MenuItem>
                   ))}
@@ -219,7 +255,7 @@ export default function TaskList({ task, fetchTask, status, members }) {
               </Stack>
             </Box>
 
-            {/* 3. FOOTER ACTIONS */}
+            {/* FOOTER */}
             <Box
               sx={{
                 p: 3,
@@ -250,6 +286,7 @@ export default function TaskList({ task, fetchTask, status, members }) {
                 >
                   {hasChanges ? "Save Changes" : "Up to date"}
                 </Button>
+
                 <IconButton
                   sx={{
                     width: "52px",
@@ -258,6 +295,7 @@ export default function TaskList({ task, fetchTask, status, members }) {
                     borderRadius: "14px",
                     color: "#94a3b8",
                   }}
+                  onClick={() => deleteTask(val._id)}
                 >
                   <DeleteOutlineIcon />
                 </IconButton>

@@ -1,8 +1,7 @@
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 function useApiClient() {
-  const { logout, token } = useContext(AuthContext);
+  const { logout, token } = useAuth();
 
   return async function (url, options = {}) {
     const { method = "GET", body, headers = {} } = options;
