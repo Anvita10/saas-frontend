@@ -10,6 +10,7 @@ import WorkspaceDetail from "../component/workspace/WorkspaceDetail";
 import Dashboard from "../component/dashboard/Dashboard";
 import WorkspaceSettings from "../component/workspace/WorkspaceSettings";
 import LandingPage from "../component/landing/LandingPage";
+import AnalysisSection from "../component/analysis/AnalysisSection";
 
 function AppRoutes() {
   const { token } = useAuth();
@@ -57,6 +58,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <WorkspaceSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workspace/:workspaceId/analysis"
+          element={
+            <ProtectedRoute>
+              <AnalysisSection />
             </ProtectedRoute>
           }
         />
