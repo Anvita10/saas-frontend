@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { useState } from "react";
-import TitleIcon from "@mui/icons-material/Title";
 import PersonIcon from "@mui/icons-material/Person";
 import FlagIcon from "@mui/icons-material/Flag";
 
@@ -24,7 +23,6 @@ export default function TaskInput({ userList, onAddTask }) {
 
   const priorityList = ["Low", "Medium", "High"];
 
-  // Logic remains exactly as provided
   const handleClick = async () => {
     if (!form.title.trim()) {
       setError((prev) => ({ ...prev, title: "Title is required" }));
@@ -67,38 +65,17 @@ export default function TaskInput({ userList, onAddTask }) {
     }
   };
 
-  // UI Upgrade using "small" sizes and custom styling for Sidebar fit
-  const inputStyle = {
-    "& .MuiOutlinedInput-root": {
-      borderRadius: 2,
-      bgcolor: "#fcfdfe",
-    },
-    "& .MuiInputLabel-root": {
-      fontSize: "0.875rem",
-      fontWeight: 500,
-    },
-  };
-
   return (
     <Stack spacing={2.5}>
       <TextField
         fullWidth
         size="small"
         label="Title"
-        placeholder="What needs to be done?"
         value={form.title}
         name="title"
         onChange={handleFormChange}
         error={Boolean(error.title)}
         helperText={error.title}
-        sx={inputStyle}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <TitleIcon sx={{ fontSize: 18, color: "primary.light" }} />
-            </InputAdornment>
-          ),
-        }}
       />
 
       <TextField
@@ -107,13 +84,11 @@ export default function TaskInput({ userList, onAddTask }) {
         multiline
         rows={3}
         label="Description"
-        placeholder="Add more details..."
         value={form.description}
         name="description"
         onChange={handleFormChange}
         error={Boolean(error.description)}
         helperText={error.description}
-        sx={inputStyle}
       />
 
       <Stack direction="row" spacing={2}>
@@ -125,7 +100,6 @@ export default function TaskInput({ userList, onAddTask }) {
           value={form.assignedTo}
           name="assignedTo"
           onChange={handleFormChange}
-          sx={inputStyle}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -149,7 +123,6 @@ export default function TaskInput({ userList, onAddTask }) {
           value={form.priority}
           name="priority"
           onChange={handleFormChange}
-          sx={inputStyle}
         >
           {priorityList.map((val, idx) => (
             <MenuItem key={idx} value={val}>
@@ -181,7 +154,6 @@ export default function TaskInput({ userList, onAddTask }) {
           textField: {
             size: "small",
             fullWidth: true,
-            sx: inputStyle,
           },
         }}
       />
