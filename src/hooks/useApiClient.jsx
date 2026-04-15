@@ -1,45 +1,51 @@
+import { useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 
 function useApiClient() {
   const { logout, token } = useAuth();
 
-  return async function (url, options = {}) {
-    const { method = "GET", body, headers = {} } = options;
-    const config = {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token,
-        ...headers,
-      },
-    };
+  const apiClient = useCallback(
+    async (url, options = {}) => {
+      const { method = "GET", body, headers = {} } = options;
+      const config = {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+          ...headers,
+        },
+      };
 
-    if (body) {
-      config.body = JSON.stringify(body);
-    }
-
-    try {
-      const ApiResponse = await fetch(`https://saas-backend-wn5b.onrender.com${url}`, config);
-
-      if (ApiResponse.status === 401) {
-        logout();
-        window.location.href = "/";
-        throw new Error("Unauthorized");
+      if (body) {
+        config.body = JSON.stringify(body);
       }
 
-      if (!ApiResponse.ok) {
-        const errData = await ApiResponse.json();
-        throw new Error(errData.message || "Something went wrong");
+      try {
+        const ApiResponse = await fetch(`https://saas-backend-wn5b.onrender.com${url}`, config);
+
+        if (ApiResponse.status === 401) {
+          logout();
+          window.location.href = "/";
+          throw new Error("Unauthorized");
+        }
+
+        if (!ApiResponse.ok) {
+          const errData = await ApiResponse.json();
+          throw new Error(errData.message || "Something went wrong");
+        }
+
+        if (ApiResponse.status === 204) return null;
+
+        return ApiResponse.json();
+      } catch (err) {
+        console.error("API Error:", err.message);
+        throw err;
       }
+    },
+    [token, logout],
+  );
 
-      if (ApiResponse.status === 204) return null;
-
-      return ApiResponse.json();
-    } catch (err) {
-      console.error("API Error:", err.message);
-      throw err;
-    }
-  };
+  return apiClient;
 }
 
 export default useApiClient;
