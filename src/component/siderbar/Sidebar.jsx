@@ -15,6 +15,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import SettingsIcon from "@mui/icons-material/Settings";
+import AnalyticsIcon from "@mui/icons-material/Analytics";
 
 function Sidebar() {
   const navigate = useNavigate();
@@ -50,6 +51,13 @@ function Sidebar() {
       title: "Settings",
       path: `/workspace/${workspaceId}/setting`,
       icon: <SettingsIcon sx={{ fontSize: 20 }} />,
+      visible: !!workspaceId,
+    },
+    {
+      id: 4,
+      title: "Analysis",
+      path: `/workspace/${workspaceId}/analysis`,
+      icon: <AnalyticsIcon sx={{ fontSize: 20 }} />,
       visible: !!workspaceId,
     },
   ];
@@ -212,4 +220,5 @@ function Sidebar() {
 }
 
 export default Sidebar;
+
 
