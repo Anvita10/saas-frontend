@@ -11,6 +11,7 @@ import Dashboard from "../component/dashboard/Dashboard";
 import WorkspaceSettings from "../component/workspace/WorkspaceSettings";
 import LandingPage from "../component/landing/LandingPage";
 import AnalysisSection from "../component/analysis/AnalysisSection";
+import TrendComparisonSection from "../component/analysis/TrendComparisonSection";
 
 function AppRoutes() {
   const { token } = useAuth();
@@ -66,6 +67,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <AnalysisSection />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workspace/:workspaceId/comparison"
+          element={
+            <ProtectedRoute>
+              <TrendComparisonSection />
             </ProtectedRoute>
           }
         />
