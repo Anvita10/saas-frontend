@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useApiClient from "../../hooks/useApiClient";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -28,11 +28,14 @@ import {
   Timer,
 } from "@mui/icons-material";
 
+// Import centralized styles and the new theme helper
 import {
   CARD_STYLES,
   CARD_HOVER,
   HEADER_TEXT,
   SUB_TEXT,
+  ANALYSIS_COLORS,
+  getInsightTheme,
 } from "../../theme/commonStyle";
 
 const AnalysisSection = () => {
@@ -40,6 +43,7 @@ const AnalysisSection = () => {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const apiClient = useApiClient();
+  const navigate = useNavigate();
   const theme = useTheme();
 
   useEffect(() => {
@@ -57,54 +61,12 @@ const AnalysisSection = () => {
     fetchAnalysis();
   }, [apiClient, workspaceId]);
 
-  const getInsightStyle = (text) => {
-    if (text.includes("🔴") || text.includes("🚨"))
-      return {
-        border: "1px solid #fecaca",
-        background: "#fef2f2",
-        color: "#b91c1c",
-      };
-    if (text.includes("🟡") || text.includes("⚠️"))
-      return {
-        border: "1px solid #fde68a",
-        background: "#fffbeb",
-        color: "#a16207",
-      };
-    if (text.includes("🟢"))
-      return {
-        border: "1px solid #bbf7d0",
-        background: "#f0fdf4",
-        color: "#15803d",
-      };
-    return {
-      border: "1px solid #bae6fd",
-      background: "#ecfeff",
-      color: "#1e293b",
-    };
-  };
-
-  const getInsightIconStyle = (text) => {
-    if (text.includes("🔴") || text.includes("🚨"))
-      return {
-        background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
-      };
-    if (text.includes("🟡") || text.includes("⚠️"))
-      return {
-        background: "linear-gradient(135deg, #f59e0b 0%, #a16207 100%)",
-      };
-    if (text.includes("🟢"))
-      return {
-        background: "linear-gradient(135deg, #10b981 0%, #15803d 100%)",
-      };
-    return { background: "linear-gradient(135deg, #1db5c7 0%, #0f172a 100%)" };
-  };
-
   const chartData = analysis
     ? [
         {
           name: "Completed",
           value: analysis.analytics.completedTasks,
-          color: "#10b981",
+          color: ANALYSIS_COLORS.success.main,
         },
         {
           name: "Active",
@@ -114,12 +76,12 @@ const AnalysisSection = () => {
         {
           name: "Dropped",
           value: analysis.analytics.rejectedTasks,
-          color: "#ef4444",
+          color: ANALYSIS_COLORS.critical.main,
         },
         {
           name: "Overdue",
           value: analysis.analytics.overdueTasks,
-          color: "#f59e0b",
+          color: ANALYSIS_COLORS.warning.main,
         },
       ]
     : [];
@@ -134,6 +96,7 @@ const AnalysisSection = () => {
             p: 2,
             background: data.payload.color,
             color: "white",
+            border: "none",
           }}
         >
           <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -173,10 +136,7 @@ const AnalysisSection = () => {
               <AutoAwesome
                 sx={{ color: theme.palette.primary.main, fontSize: 32 }}
               />
-              <Typography
-                variant="h5"
-                sx={{ ...HEADER_TEXT, color: theme.palette.secondary.main }}
-              >
+              <Typography variant="h5" sx={HEADER_TEXT}>
                 AI Workspace Intelligence
               </Typography>
             </Box>
@@ -186,25 +146,47 @@ const AnalysisSection = () => {
               insights.
             </Typography>
           </Box>
-          <Chip
-            icon={
-              <CalendarToday
-                sx={{
-                  fontSize: "16px !important",
-                  color: theme.palette.primary.main,
-                }}
-              />
-            }
-            label="Last 7 Days"
-            variant="outlined"
-            sx={{
-              borderRadius: "8px",
-              fontWeight: 600,
-              bgcolor: "#fff",
-              color: theme.palette.secondary.main,
-              borderColor: "#e2e8f0",
-            }}
-          />
+          <Box display="flex" alignItems="center" gap={2}>
+            <Chip
+              icon={
+                <CalendarToday
+                  sx={{
+                    fontSize: "12px !important",
+                    color: theme.palette.primary.main,
+                  }}
+                />
+              }
+              label="Last 7 Days"
+              variant="outlined"
+              sx={{
+                borderRadius: "6px",
+                fontWeight: 500,
+                bgcolor: "#fff",
+                borderColor: "#e2e8f0",
+              }}
+            />
+            <Box
+              onClick={() => navigate(`/workspace/${workspaceId}/comparison`)}
+              sx={{
+                px: 2,
+                py: 1,
+                borderRadius: "15px",
+                cursor: "pointer",
+                fontWeight: 800,
+                fontSize: "0.85rem",
+                color: "#fff",
+                background: ANALYSIS_COLORS.info.gradient,
+                boxShadow: "0 6px 16px rgba(29,181,199,0.25)",
+                transition: "0.2s",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 10px 20px rgba(29,181,199,0.35)",
+                },
+              }}
+            >
+              📊 Compare Trends
+            </Box>
+          </Box>
         </Box>
       </Box>
 
@@ -237,14 +219,14 @@ const AnalysisSection = () => {
                 value: analysis.analytics.totalTasks,
                 sub: "Total scope",
                 icon: <ListAlt />,
-                color: theme.palette.primary.main,
+                color: ANALYSIS_COLORS.info.main,
               },
               {
                 label: "Completed",
                 value: analysis.analytics.completedTasks,
                 sub: "Last 7 days",
                 icon: <TrendingUp />,
-                color: "#10b981",
+                color: ANALYSIS_COLORS.success.main,
               },
               {
                 label: "Active",
@@ -258,7 +240,7 @@ const AnalysisSection = () => {
                 value: analysis.analytics.rejectedTasks,
                 sub: "Canceled",
                 icon: <ListAlt />,
-                color: "#ef4444",
+                color: ANALYSIS_COLORS.critical.main,
               },
               {
                 label: "Completion Rate",
@@ -272,7 +254,7 @@ const AnalysisSection = () => {
                 value: analysis.analytics.overdueTasks,
                 sub: "Immediate attention",
                 icon: <Timer />,
-                color: "#f59e0b",
+                color: ANALYSIS_COLORS.warning.main,
               },
             ].map((item, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
@@ -292,7 +274,6 @@ const AnalysisSection = () => {
                         color: item.color,
                         width: 36,
                         height: 36,
-                        fontSize: 18,
                       }}
                     >
                       {item.icon}
@@ -334,7 +315,6 @@ const AnalysisSection = () => {
 
           {/* --- CHART & INSIGHTS --- */}
           <Grid container spacing={4} mt={2}>
-            {/* LEFT: CHART */}
             <Grid item xs={12} lg={7}>
               <Typography
                 variant="h6"
@@ -374,48 +354,52 @@ const AnalysisSection = () => {
               </Paper>
             </Grid>
 
-            {/* RIGHT: INSIGHTS */}
             <Grid item xs={12} lg={5}>
               <Typography variant="h6" sx={{ ...HEADER_TEXT, mb: 2 }}>
                 🧠 Smart Observations
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {analysis.insights.map((insight, index) => (
-                  <Box
-                    key={index}
-                    display="flex"
-                    alignItems="flex-start"
-                    gap={2}
-                  >
-                    <Avatar
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        ...getInsightIconStyle(insight),
-                        boxShadow: "0 4px 12px rgba(15,23,42,0.1)",
-                      }}
+                {analysis.insights.map((insight, index) => {
+                  const insightStyle = getInsightTheme(insight); // Using the helper
+                  return (
+                    <Box
+                      key={index}
+                      display="flex"
+                      alignItems="flex-start"
+                      gap={2}
                     >
-                      <AutoAwesome sx={{ fontSize: 18, color: "#fff" }} />
-                    </Avatar>
-                    <Paper
-                      sx={{
-                        ...CARD_STYLES,
-                        p: 2,
-                        flex: 1,
-                        ...getInsightStyle(insight),
-                        transition: "transform 0.2s, box-shadow 0.2s",
-                        "&:hover": {
-                          transform: "translateX(5px)",
-                          boxShadow: "0 4px 12px rgba(15,23,42,0.05)",
-                        },
-                      }}
-                    >
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {insight}
-                      </Typography>
-                    </Paper>
-                  </Box>
-                ))}
+                      <Avatar
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          background: insightStyle.gradient,
+                          boxShadow: "0 4px 12px rgba(15,23,42,0.1)",
+                        }}
+                      >
+                        <AutoAwesome sx={{ fontSize: 18, color: "#fff" }} />
+                      </Avatar>
+                      <Paper
+                        sx={{
+                          ...CARD_STYLES,
+                          p: 2,
+                          flex: 1,
+                          border: `1px solid ${insightStyle.border}`,
+                          background: insightStyle.bg,
+                          color: insightStyle.text,
+                          transition: "transform 0.2s, box-shadow 0.2s",
+                          "&:hover": {
+                            transform: "translateX(5px)",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                          },
+                        }}
+                      >
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {insight}
+                        </Typography>
+                      </Paper>
+                    </Box>
+                  );
+                })}
               </Box>
             </Grid>
           </Grid>
@@ -426,3 +410,4 @@ const AnalysisSection = () => {
 };
 
 export default AnalysisSection;
+
