@@ -27,21 +27,55 @@ export const SUB_TEXT = {
   fontWeight: 500,
 };
 
-export const INPUT_STYLE = {
-  "& .MuiOutlinedInput-root": {
-    height: "48px",
-    borderRadius: "12px",
-    bgcolor: "#fff",
-    "& fieldset": { borderColor: "#e2e8f0" },
+// --- ANALYSIS & TREND COLORS ---
+export const ANALYSIS_COLORS = {
+  critical: {
+    main: "#ef4444",
+    bg: "#fef2f2",
+    border: "#fecaca",
+    text: "#b91c1c",
+    gradient: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+  },
+  warning: {
+    main: "#f59e0b",
+    bg: "#fffbeb",
+    border: "#fde68a",
+    text: "#a16207",
+    gradient: "linear-gradient(135deg, #f59e0b 0%, #a16207 100%)",
+  },
+  success: {
+    main: "#10b981",
+    bg: "#f0fdf4",
+    border: "#bbf7d0",
+    text: "#15803d",
+    gradient: "linear-gradient(135deg, #10b981 0%, #15803d 100%)",
+  },
+  info: {
+    main: "#1db5c7",
+    bg: "#ecfeff",
+    border: "#bae6fd",
+    text: "#1e293b",
+    gradient: "linear-gradient(135deg, #1db5c7 0%, #0f172a 100%)",
   },
 };
 
+// --- HELPERS ---
+
+export const getInsightTheme = (text = "") => {
+  if (text.includes("🔴") || text.includes("🚨"))
+    return ANALYSIS_COLORS.critical;
+  if (text.includes("🟡") || text.includes("⚠️"))
+    return ANALYSIS_COLORS.warning;
+  if (text.includes("🟢")) return ANALYSIS_COLORS.success;
+  return ANALYSIS_COLORS.info;
+};
+
 export const STATUS_CONFIG = {
-  completed: { color: "#10b981", bg: "#ecfdf5" },
+  completed: { color: ANALYSIS_COLORS.success.main, bg: "#ecfdf5" },
   "in-progress": { color: "#3b82f6", bg: "#eff6ff" },
-  pending: { color: "#f59e0b", bg: "#fffbeb" },
+  pending: { color: ANALYSIS_COLORS.warning.main, bg: "#fffbeb" },
   todo: { color: "#64748b", bg: "#f8fafc" },
-  rejected: { color: "#ef4444", bg: "#fef2f2" },
+  rejected: { color: ANALYSIS_COLORS.critical.main, bg: "#fef2f2" },
 };
 
 export const getStatusConfig = (status = "") => {
@@ -55,10 +89,18 @@ export const getStatusConfig = (status = "") => {
 
 export const getPriorityColor = (priority) => {
   const p = priority?.toLowerCase();
-
-  if (p === "high") return "#ef4444";
-  if (p === "medium") return "#f59e0b";
-  if (p === "low") return "#10b981";
-
+  if (p === "high") return ANALYSIS_COLORS.critical.main;
+  if (p === "medium") return ANALYSIS_COLORS.warning.main;
+  if (p === "low") return ANALYSIS_COLORS.success.main;
   return "#94a3b8";
 };
+
+export const INPUT_STYLE = {
+  "& .MuiOutlinedInput-root": {
+    height: "48px",
+    borderRadius: "12px",
+    bgcolor: "#fff",
+    "& fieldset": { borderColor: "#e2e8f0" },
+  },
+};
+
